@@ -642,7 +642,7 @@ local function Notify(title, message, notifType)
         Position = UDim2.new(0, 12, 0, 10),
         Font = Enum.Font.GothamBold,
         Text = icons[notifData.notifType],
-        TextSize = 18,
+        TextSize = 10,
         TextColor3 = colors[notifData.notifType],
         Parent = NotifFrame,
     })
@@ -653,7 +653,7 @@ local function Notify(title, message, notifType)
         Position = UDim2.new(0, 45, 0, 8),
         Font = Enum.Font.GothamBold,
         Text = notifData.title,
-        TextSize = 14,
+        TextSize = 9,
         TextColor3 = CurrentTheme.TextPrimary,
         TextXAlignment = Enum.TextXAlignment.Left,
         Parent = NotifFrame,
@@ -665,7 +665,7 @@ local function Notify(title, message, notifType)
         Position = UDim2.new(0, 12, 0, 32),
         Font = Enum.Font.Gotham,
         Text = notifData.message,
-        TextSize = 12,
+        TextSize = 9,
         TextColor3 = CurrentTheme.TextSecondary,
         TextXAlignment = Enum.TextXAlignment.Left,
         TextWrapped = true,
@@ -710,8 +710,8 @@ local MainUI = Create("Frame", {
     Name = "MainUI",
     BackgroundColor3 = CurrentTheme.Background,
     BackgroundTransparency = 0.05,
-    Size = UDim2.new(0, 900, 0, 580),
-    Position = UDim2.new(0.5, -450, 0.5, -290),
+    Size = UDim2.new(0, 520, 0, 360),
+    Position = UDim2.new(0.5, -260, 0.5, -180),
     BorderSizePixel = 0,
     ClipsDescendants = true,
     Active = true,
@@ -777,7 +777,7 @@ local TopBar = Create("Frame", {
     Name = "TopBar",
     BackgroundColor3 = CurrentTheme.Secondary,
     BackgroundTransparency = 0.3,
-    Size = UDim2.new(1, 0, 0, 50),
+    Size = UDim2.new(1, 0, 0, 32),
     BorderSizePixel = 0,
     Parent = MainUI,
 })
@@ -802,7 +802,7 @@ local HubNameLabel = Create("TextLabel", {
     Position = UDim2.new(0, 55, 0, 5),
     Font = Enum.Font.GothamBold,
     Text = Config.HubName,
-    TextSize = 18,
+    TextSize = 9,
     TextColor3 = CurrentTheme.TextPrimary,
     TextXAlignment = Enum.TextXAlignment.Left,
     Parent = TopBar,
@@ -814,7 +814,7 @@ local HubVersionLabel = Create("TextLabel", {
     Position = UDim2.new(0, 55, 0, 28),
     Font = Enum.Font.Gotham,
     Text = Config.Version,
-    TextSize = 12,
+    TextSize = 9,
     TextColor3 = CurrentTheme.TextMuted,
     TextXAlignment = Enum.TextXAlignment.Left,
     Parent = TopBar,
@@ -836,7 +836,7 @@ local SearchIcon = Create("TextLabel", {
     Position = UDim2.new(0, 5, 0, 0),
     Font = Enum.Font.Gotham,
     Text = "S",
-    TextSize = 14,
+    TextSize = 9,
     TextColor3 = CurrentTheme.TextMuted,
     Parent = SearchBar,
 })
@@ -848,7 +848,7 @@ local SearchInput = Create("TextBox", {
     Font = Enum.Font.Gotham,
     Text = "",
     PlaceholderText = "Search scripts, hubs, games...",
-    TextSize = 13,
+    TextSize = 9,
     TextColor3 = CurrentTheme.TextPrimary,
     PlaceholderColor3 = CurrentTheme.TextMuted,
     ClearTextOnFocus = false,
@@ -862,7 +862,7 @@ local MinimizeBtn = Create("TextButton", {
     Position = UDim2.new(1, -90, 0, 10),
     Font = Enum.Font.GothamBold,
     Text = "-",
-    TextSize = 20,
+    TextSize = 9,
     TextColor3 = CurrentTheme.TextSecondary,
     Parent = TopBar,
 })
@@ -912,7 +912,7 @@ local Sidebar = Create("Frame", {
     Name = "Sidebar",
     BackgroundColor3 = CurrentTheme.Secondary,
     BackgroundTransparency = 0.2,
-    Size = UDim2.new(0, 200, 1, -50),
+    Size = UDim2.new(0, 140, 1, -40),
     Position = UDim2.new(0, 0, 0, 50),
     BorderSizePixel = 0,
     Parent = MainUI,
@@ -935,7 +935,7 @@ local SidebarPadding = Create("UIPadding", {
 local ProfileCard = Create("Frame", {
     BackgroundColor3 = CurrentTheme.Tertiary,
     BackgroundTransparency = 0.5,
-    Size = UDim2.new(1, 0, 0, 80),
+    Size = UDim2.new(1, 0, 0, 60),
     LayoutOrder = 0,
     Parent = Sidebar,
 })
@@ -956,7 +956,7 @@ local ProfileName = Create("TextLabel", {
     Position = UDim2.new(0, 70, 0, 18),
     Font = Enum.Font.GothamBold,
     Text = LocalPlayer.DisplayName,
-    TextSize = 14,
+    TextSize = 9,
     TextColor3 = CurrentTheme.TextPrimary,
     TextXAlignment = Enum.TextXAlignment.Left,
     Parent = ProfileCard,
@@ -968,7 +968,7 @@ local ProfileUser = Create("TextLabel", {
     Position = UDim2.new(0, 70, 0, 38),
     Font = Enum.Font.Gotham,
     Text = "@" .. LocalPlayer.Name,
-    TextSize = 12,
+    TextSize = 9,
     TextColor3 = CurrentTheme.TextMuted,
     TextXAlignment = Enum.TextXAlignment.Left,
     Parent = ProfileCard,
@@ -984,7 +984,7 @@ local OnlineIndicator = Create("Frame", {
 RoundCorners(OnlineIndicator, 4)
 
 -- ============================================================
---  NAVIGATION ITEMS
+--  NAVIGATION ITEMS (ICON ONLY - COMPACT)
 -- ============================================================
 local NavItems = {
     {Name = "Dashboard", Icon = "D", LayoutOrder = 1},
@@ -1010,20 +1010,20 @@ for _, item in ipairs(NavItems) do
         Name = item.Name .. "Nav",
         BackgroundColor3 = CurrentTheme.Tertiary,
         BackgroundTransparency = 1,
-        Size = UDim2.new(1, 0, 0, 38),
+        Size = UDim2.new(1, 0, 0, 36),
         LayoutOrder = item.LayoutOrder,
         Text = "",
         Parent = Sidebar,
     })
-    RoundCorners(NavBtn, 8)
+    RoundCorners(NavBtn, 6)
 
     local NavIcon = Create("TextLabel", {
         BackgroundTransparency = 1,
         Size = UDim2.new(0, 30, 1, 0),
         Position = UDim2.new(0, 10, 0, 0),
-        Font = Enum.Font.Gotham,
+        Font = Enum.Font.GothamBold,
         Text = item.Icon,
-        TextSize = 16,
+        TextSize = 9,
         TextColor3 = CurrentTheme.TextSecondary,
         Parent = NavBtn,
     })
@@ -1031,35 +1031,26 @@ for _, item in ipairs(NavItems) do
     local NavLabel = Create("TextLabel", {
         BackgroundTransparency = 1,
         Size = UDim2.new(1, -45, 1, 0),
-        Position = UDim2.new(0, 40, 0, 0),
+        Position = UDim2.new(0, 38, 0, 0),
         Font = Enum.Font.GothamSemibold,
         Text = item.Name,
-        TextSize = 13,
+        TextSize = 9,
         TextColor3 = CurrentTheme.TextSecondary,
         TextXAlignment = Enum.TextXAlignment.Left,
         Parent = NavBtn,
     })
 
-    if item.Name == "Premium" then
-        local Badge = Create("Frame", {
-            BackgroundColor3 = CurrentTheme.Accent,
-            Size = UDim2.new(0, 8, 0, 8),
-            Position = UDim2.new(1, -15, 0.5, -4),
-            BorderSizePixel = 0,
-            Parent = NavBtn,
-        })
-        RoundCorners(Badge, 4)
-    end
-
     NavButtons[item.Name] = NavBtn
 
     NavBtn.MouseEnter:Connect(function()
-        Tween(NavBtn, {BackgroundTransparency = 0.5}, 0.2)
+        if CurrentPage ~= item.Name then
+            Tween(NavBtn, {BackgroundTransparency = 0.6}, 0.15)
+        end
     end)
 
     NavBtn.MouseLeave:Connect(function()
         if CurrentPage ~= item.Name then
-            Tween(NavBtn, {BackgroundTransparency = 1}, 0.2)
+            Tween(NavBtn, {BackgroundTransparency = 1}, 0.15)
         end
     end)
 
@@ -1068,17 +1059,22 @@ for _, item in ipairs(NavItems) do
         CurrentPage = item.Name
 
         for name, btn in pairs(NavButtons) do
-            if name == item.Name then
-                Tween(btn, {BackgroundTransparency = 0.3}, 0.2)
-                btn:FindFirstChildOfClass("TextLabel").TextColor3 = CurrentTheme.TextPrimary
-            else
-                Tween(btn, {BackgroundTransparency = 1}, 0.2)
-                for _, label in ipairs(btn:GetChildren()) do
-                    if label:IsA("TextLabel") and label.Name ~= "TextLabel" then
-                        label.TextColor3 = CurrentTheme.TextSecondary
-                    end
+            local icon = btn:FindFirstChildOfClass("TextLabel")
+            local label = nil
+            for _, child in ipairs(btn:GetChildren()) do
+                if child:IsA("TextLabel") and child ~= icon then
+                    label = child
                 end
-                btn:FindFirstChildOfClass("TextLabel").TextColor3 = CurrentTheme.TextSecondary
+            end
+
+            if name == item.Name then
+                Tween(btn, {BackgroundTransparency = 0.3}, 0.15)
+                if icon then icon.TextColor3 = CurrentTheme.TextPrimary end
+                if label then label.TextColor3 = CurrentTheme.TextPrimary end
+            else
+                Tween(btn, {BackgroundTransparency = 1}, 0.15)
+                if icon then icon.TextColor3 = CurrentTheme.TextSecondary end
+                if label then label.TextColor3 = CurrentTheme.TextSecondary end
             end
         end
 
@@ -1088,7 +1084,11 @@ end
 
 -- Set Dashboard active
 Tween(NavButtons["Dashboard"], {BackgroundTransparency = 0.3}, 0)
-NavButtons["Dashboard"]:FindFirstChildOfClass("TextLabel").TextColor3 = CurrentTheme.TextPrimary
+for _, child in ipairs(NavButtons["Dashboard"]:GetChildren()) do
+    if child:IsA("TextLabel") then
+        child.TextColor3 = CurrentTheme.TextPrimary
+    end
+end
 
 -- ============================================================
 --  CONTENT AREA
@@ -1096,18 +1096,18 @@ NavButtons["Dashboard"]:FindFirstChildOfClass("TextLabel").TextColor3 = CurrentT
 local ContentArea = Create("Frame", {
     Name = "ContentArea",
     BackgroundTransparency = 1,
-    Size = UDim2.new(1, -200, 1, -50),
-    Position = UDim2.new(0, 200, 0, 50),
+    Size = UDim2.new(1, -160, 1, -40),
+    Position = UDim2.new(0, 160, 0, 40),
     Parent = MainUI,
 })
 
 local Breadcrumb = Create("TextLabel", {
     BackgroundTransparency = 1,
-    Size = UDim2.new(1, -20, 0, 25),
-    Position = UDim2.new(0, 10, 0, 5),
+    Size = UDim2.new(1, -10, 0, 20),
+    Position = UDim2.new(0, 5, 0, 2),
     Font = Enum.Font.Gotham,
-    Text = "Home  >  Dashboard",
-    TextSize = 12,
+    Text = "Home > Dashboard",
+    TextSize = 9,
     TextColor3 = CurrentTheme.TextMuted,
     TextXAlignment = Enum.TextXAlignment.Left,
     Parent = ContentArea,
@@ -1115,8 +1115,8 @@ local Breadcrumb = Create("TextLabel", {
 
 local PageContainer = Create("Frame", {
     BackgroundTransparency = 1,
-    Size = UDim2.new(1, -20, 1, -45),
-    Position = UDim2.new(0, 10, 0, 35),
+    Size = UDim2.new(1, -10, 1, -30),
+    Position = UDim2.new(0, 5, 0, 25),
     ClipsDescendants = true,
     Parent = ContentArea,
 })
@@ -1125,7 +1125,7 @@ local PageContainer = Create("Frame", {
 --  PAGE UPDATE FUNCTION
 -- ============================================================
 local function UpdatePage(pageName)
-    Breadcrumb.Text = "Home  >  " .. pageName
+    Breadcrumb.Text = "Home > " .. pageName
 
     for _, child in ipairs(PageContainer:GetChildren()) do
         if child:IsA("ScrollingFrame") or child:IsA("Frame") then
@@ -1135,7 +1135,7 @@ local function UpdatePage(pageName)
 
     if PageContents[pageName] then
         PageContents[pageName].Visible = true
-        Tween(PageContents[pageName], {Position = UDim2.new(0, 0, 0, 0)}, 0.3)
+        PageContents[pageName].Position = UDim2.new(0, 0, 0, 0)
     end
 
     MeowlData.Stats.FavoritePage = pageName
@@ -1171,7 +1171,7 @@ local DashboardPadding = Create("UIPadding", {
 local WelcomeBanner = Create("Frame", {
     BackgroundColor3 = CurrentTheme.Tertiary,
     BackgroundTransparency = 0.3,
-    Size = UDim2.new(1, 0, 0, 100),
+    Size = UDim2.new(1, 0, 0, 70),
     LayoutOrder = 0,
     Parent = DashboardPage,
 })
@@ -1184,7 +1184,7 @@ local WelcomeTitle = Create("TextLabel", {
     Position = UDim2.new(0, 15, 0, 15),
     Font = Enum.Font.GothamBold,
     Text = "Welcome back, " .. LocalPlayer.DisplayName .. "!",
-    TextSize = 20,
+    TextSize = 9,
     TextColor3 = CurrentTheme.TextPrimary,
     TextXAlignment = Enum.TextXAlignment.Left,
     Parent = WelcomeBanner,
@@ -1196,7 +1196,7 @@ local WelcomeSub = Create("TextLabel", {
     Position = UDim2.new(0, 15, 0, 50),
     Font = Enum.Font.Gotham,
     Text = "Ready to dominate? Pick a script and let's go!",
-    TextSize = 14,
+    TextSize = 9,
     TextColor3 = CurrentTheme.TextSecondary,
     TextXAlignment = Enum.TextXAlignment.Left,
     Parent = WelcomeBanner,
@@ -1208,7 +1208,7 @@ local DailyQuoteLabel = Create("TextLabel", {
     Position = UDim2.new(0, 15, 0, 75),
     Font = Enum.Font.GothamItalic,
     Text = '"' .. DailyQuotes[math.random(1, #DailyQuotes)] .. '"',
-    TextSize = 12,
+    TextSize = 9,
     TextColor3 = CurrentTheme.TextMuted,
     TextXAlignment = Enum.TextXAlignment.Left,
     Parent = WelcomeBanner,
@@ -1217,7 +1217,7 @@ local DailyQuoteLabel = Create("TextLabel", {
 -- Stats Row
 local StatsRow = Create("Frame", {
     BackgroundTransparency = 1,
-    Size = UDim2.new(1, 0, 0, 80),
+    Size = UDim2.new(1, 0, 0, 60),
     LayoutOrder = 1,
     Parent = DashboardPage,
 })
@@ -1233,7 +1233,7 @@ for i, stat in ipairs(StatCards) do
     local StatCard = Create("Frame", {
         BackgroundColor3 = CurrentTheme.Secondary,
         BackgroundTransparency = 0.3,
-        Size = UDim2.new(0.235, -5, 1, 0),
+        Size = UDim2.new(0.235, -3, 1, 0),
         Position = UDim2.new((i-1) * 0.25, 0, 0, 0),
         Parent = StatsRow,
     })
@@ -1245,7 +1245,7 @@ for i, stat in ipairs(StatCards) do
         Position = UDim2.new(0, 10, 0, 10),
         Font = Enum.Font.Gotham,
         Text = stat.Icon,
-        TextSize = 20,
+        TextSize = 9,
         Parent = StatCard,
     })
 
@@ -1256,7 +1256,7 @@ for i, stat in ipairs(StatCards) do
         Position = UDim2.new(0, 45, 0, 8),
         Font = Enum.Font.GothamBold,
         Text = stat.Value,
-        TextSize = 18,
+        TextSize = 9,
         TextColor3 = stat.Color,
         TextXAlignment = Enum.TextXAlignment.Left,
         Parent = StatCard,
@@ -1268,7 +1268,7 @@ for i, stat in ipairs(StatCards) do
         Position = UDim2.new(0, 10, 0, 50),
         Font = Enum.Font.Gotham,
         Text = stat.Label,
-        TextSize = 11,
+        TextSize = 9,
         TextColor3 = CurrentTheme.TextMuted,
         TextXAlignment = Enum.TextXAlignment.Left,
         Parent = StatCard,
@@ -1318,7 +1318,7 @@ local QuickActionsTitle = Create("TextLabel", {
 
 local QuickActionsGrid = Create("Frame", {
     BackgroundTransparency = 1,
-    Size = UDim2.new(1, 0, 0, 100),
+    Size = UDim2.new(1, 0, 0, 70),
     LayoutOrder = 3,
     Parent = DashboardPage,
 })
@@ -1365,8 +1365,8 @@ for i, action in ipairs(QuickActions) do
     local ActionBtn = Create("TextButton", {
         BackgroundColor3 = CurrentTheme.Tertiary,
         BackgroundTransparency = 0.4,
-        Size = UDim2.new(0.235, -6, 0, 45),
-        Position = UDim2.new(col * 0.25, 0, row * 55, 0),
+        Size = UDim2.new(0.235, -4, 0, 32),
+        Position = UDim2.new(col * 0.25, 0, row * 38, 0),
         Text = "",
         Parent = QuickActionsGrid,
     })
@@ -1388,7 +1388,7 @@ for i, action in ipairs(QuickActions) do
         Position = UDim2.new(0, 35, 0, 0),
         Font = Enum.Font.GothamSemibold,
         Text = action.Name,
-        TextSize = 11,
+        TextSize = 9,
         TextColor3 = CurrentTheme.TextPrimary,
         TextXAlignment = Enum.TextXAlignment.Left,
         Parent = ActionBtn,
@@ -1425,7 +1425,7 @@ local ServerInfoTitle = Create("TextLabel", {
 local ServerInfoCard = Create("Frame", {
     BackgroundColor3 = CurrentTheme.Secondary,
     BackgroundTransparency = 0.3,
-    Size = UDim2.new(1, 0, 0, 140),
+    Size = UDim2.new(1, 0, 0, 110),
     LayoutOrder = 5,
     Parent = DashboardPage,
 })
@@ -1450,7 +1450,7 @@ for i, info in ipairs(ServerInfoItems) do
         Position = UDim2.new(col * 0.5 + 0.02, 0, row * 45 + 10, 0),
         Font = Enum.Font.Gotham,
         Text = info.Label .. ":",
-        TextSize = 12,
+        TextSize = 9,
         TextColor3 = CurrentTheme.TextMuted,
         TextXAlignment = Enum.TextXAlignment.Left,
         Parent = ServerInfoCard,
@@ -1462,7 +1462,7 @@ for i, info in ipairs(ServerInfoItems) do
         Position = UDim2.new(col * 0.5 + 0.02, 0, row * 45 + 28, 0),
         Font = Enum.Font.GothamSemibold,
         Text = info.Value,
-        TextSize = 12,
+        TextSize = 9,
         TextColor3 = CurrentTheme.TextPrimary,
         TextXAlignment = Enum.TextXAlignment.Left,
         Parent = ServerInfoCard,
@@ -1485,7 +1485,7 @@ local ScriptsPage = Create("Frame", {
 -- Filter buttons
 local FilterFrame = Create("Frame", {
     BackgroundTransparency = 1,
-    Size = UDim2.new(1, 0, 0, 35),
+    Size = UDim2.new(1, 0, 0, 28),
     Position = UDim2.new(0, 0, 0, 0),
     Parent = ScriptsPage,
 })
@@ -1501,7 +1501,7 @@ for i, filter in ipairs(FilterButtons) do
         Position = UDim2.new(0, (i-1) * 85, 0, 3),
         Font = Enum.Font.GothamSemibold,
         Text = filter,
-        TextSize = 11,
+        TextSize = 9,
         TextColor3 = CurrentTheme.TextSecondary,
         Parent = FilterFrame,
     })
@@ -1526,7 +1526,7 @@ local ScriptGrid = Create("ScrollingFrame", {
 })
 
 local GridLayout = Create("UIGridLayout", {
-    CellSize = UDim2.new(0, 200, 0, 120),
+    CellSize = UDim2.new(0, 140, 0, 90),
     CellPadding = UDim2.new(0, 10, 0, 10),
     SortOrder = Enum.SortOrder.LayoutOrder,
     Parent = ScriptGrid,
@@ -1546,7 +1546,7 @@ local function CreateScriptCard(scriptData, index)
     local Card = Create("Frame", {
         BackgroundColor3 = CurrentTheme.Secondary,
         BackgroundTransparency = 0.3,
-        Size = UDim2.new(0, 200, 0, 120),
+        Size = UDim2.new(0, 140, 0, 90),
         LayoutOrder = index,
         Parent = ScriptGrid,
     })
@@ -1559,7 +1559,7 @@ local function CreateScriptCard(scriptData, index)
         Position = UDim2.new(0, 10, 0, 10),
         Font = Enum.Font.GothamBold,
         Text = scriptData.Icon,
-        TextSize = 20,
+        TextSize = 9,
         TextColor3 = CurrentTheme.Accent,
         Parent = Card,
     })
@@ -1570,7 +1570,7 @@ local function CreateScriptCard(scriptData, index)
         Position = UDim2.new(0, 55, 0, 10),
         Font = Enum.Font.GothamBold,
         Text = scriptData.Name,
-        TextSize = 13,
+        TextSize = 9,
         TextColor3 = CurrentTheme.TextPrimary,
         TextXAlignment = Enum.TextXAlignment.Left,
         Parent = Card,
@@ -1582,7 +1582,7 @@ local function CreateScriptCard(scriptData, index)
         Position = UDim2.new(0, 10, 0, 50),
         Font = Enum.Font.Gotham,
         Text = scriptData.Description,
-        TextSize = 10,
+        TextSize = 9,
         TextColor3 = CurrentTheme.TextSecondary,
         TextXAlignment = Enum.TextXAlignment.Left,
         TextWrapped = true,
@@ -1595,7 +1595,7 @@ local function CreateScriptCard(scriptData, index)
         Position = UDim2.new(0, 10, 0, 85),
         Font = Enum.Font.Gotham,
         Text = "★ " .. scriptData.Rating,
-        TextSize = 11,
+        TextSize = 9,
         TextColor3 = CurrentTheme.Warning,
         Parent = Card,
     })
@@ -1606,7 +1606,7 @@ local function CreateScriptCard(scriptData, index)
         Position = UDim2.new(0, 65, 0, 85),
         Font = Enum.Font.Gotham,
         Text = FormatNumber(scriptData.Uses) .. " uses",
-        TextSize = 10,
+        TextSize = 9,
         TextColor3 = CurrentTheme.TextMuted,
         Parent = Card,
     })
@@ -1617,7 +1617,7 @@ local function CreateScriptCard(scriptData, index)
         Position = UDim2.new(1, -90, 0, 88),
         Font = Enum.Font.GothamBold,
         Text = "Execute",
-        TextSize = 11,
+        TextSize = 9,
         TextColor3 = Color3.fromRGB(255, 255, 255),
         Parent = Card,
     })
@@ -1647,7 +1647,7 @@ local function CreateScriptCard(scriptData, index)
         Position = UDim2.new(1, -145, 0, 88),
         Font = Enum.Font.Gotham,
         Text = "Copy",
-        TextSize = 10,
+        TextSize = 9,
         TextColor3 = CurrentTheme.TextSecondary,
         Parent = Card,
     })
@@ -1731,7 +1731,7 @@ local HubBrowserPage = Create("ScrollingFrame", {
 })
 
 local HubGridLayout = Create("UIGridLayout", {
-    CellSize = UDim2.new(0, 200, 0, 100),
+    CellSize = UDim2.new(0, 140, 0, 80),
     CellPadding = UDim2.new(0, 10, 0, 10),
     SortOrder = Enum.SortOrder.LayoutOrder,
     Parent = HubBrowserPage,
@@ -1748,7 +1748,7 @@ for i, hub in ipairs(HubDatabase) do
     local HubCard = Create("Frame", {
         BackgroundColor3 = CurrentTheme.Secondary,
         BackgroundTransparency = 0.3,
-        Size = UDim2.new(0, 200, 0, 100),
+        Size = UDim2.new(0, 140, 0, 80),
         LayoutOrder = i,
         Parent = HubBrowserPage,
     })
@@ -1760,7 +1760,7 @@ for i, hub in ipairs(HubDatabase) do
         Position = UDim2.new(0, 10, 0, 10),
         Font = Enum.Font.GothamBold,
         Text = hub.Icon,
-        TextSize = 20,
+        TextSize = 9,
         TextColor3 = CurrentTheme.Accent,
         Parent = HubCard,
     })
@@ -1771,7 +1771,7 @@ for i, hub in ipairs(HubDatabase) do
         Position = UDim2.new(0, 55, 0, 10),
         Font = Enum.Font.GothamBold,
         Text = hub.Name,
-        TextSize = 14,
+        TextSize = 9,
         TextColor3 = CurrentTheme.TextPrimary,
         TextXAlignment = Enum.TextXAlignment.Left,
         Parent = HubCard,
@@ -1783,7 +1783,7 @@ for i, hub in ipairs(HubDatabase) do
         Position = UDim2.new(0, 10, 0, 50),
         Font = Enum.Font.Gotham,
         Text = hub.Description,
-        TextSize = 10,
+        TextSize = 9,
         TextColor3 = CurrentTheme.TextSecondary,
         TextXAlignment = Enum.TextXAlignment.Left,
         Parent = HubCard,
@@ -1795,7 +1795,7 @@ for i, hub in ipairs(HubDatabase) do
         Position = UDim2.new(0, 10, 0, 75),
         Font = Enum.Font.Gotham,
         Text = "★ " .. hub.Rating,
-        TextSize = 11,
+        TextSize = 9,
         TextColor3 = CurrentTheme.Warning,
         Parent = HubCard,
     })
@@ -1806,7 +1806,7 @@ for i, hub in ipairs(HubDatabase) do
         Position = UDim2.new(0, 70, 0, 75),
         Font = Enum.Font.Gotham,
         Text = FormatNumber(hub.Users) .. " users",
-        TextSize = 10,
+        TextSize = 9,
         TextColor3 = CurrentTheme.TextMuted,
         Parent = HubCard,
     })
@@ -1837,7 +1837,7 @@ local GameBrowserPage = Create("ScrollingFrame", {
 })
 
 local GameGridLayout = Create("UIGridLayout", {
-    CellSize = UDim2.new(0, 200, 0, 110),
+    CellSize = UDim2.new(0, 140, 0, 85),
     CellPadding = UDim2.new(0, 10, 0, 10),
     SortOrder = Enum.SortOrder.LayoutOrder,
     Parent = GameBrowserPage,
@@ -1854,7 +1854,7 @@ for i, gameData in ipairs(GameDatabase) do
     local GameCard = Create("Frame", {
         BackgroundColor3 = CurrentTheme.Secondary,
         BackgroundTransparency = 0.3,
-        Size = UDim2.new(0, 200, 0, 110),
+        Size = UDim2.new(0, 140, 0, 85),
         LayoutOrder = i,
         Parent = GameBrowserPage,
     })
@@ -1866,7 +1866,7 @@ for i, gameData in ipairs(GameDatabase) do
         Position = UDim2.new(0, 10, 0, 10),
         Font = Enum.Font.GothamBold,
         Text = gameData.Icon,
-        TextSize = 20,
+        TextSize = 9,
         TextColor3 = CurrentTheme.Accent,
         Parent = GameCard,
     })
@@ -1877,7 +1877,7 @@ for i, gameData in ipairs(GameDatabase) do
         Position = UDim2.new(0, 55, 0, 10),
         Font = Enum.Font.GothamBold,
         Text = gameData.Name,
-        TextSize = 13,
+        TextSize = 9,
         TextColor3 = CurrentTheme.TextPrimary,
         TextXAlignment = Enum.TextXAlignment.Left,
         Parent = GameCard,
@@ -1889,7 +1889,7 @@ for i, gameData in ipairs(GameDatabase) do
         Position = UDim2.new(0, 10, 0, 50),
         Font = Enum.Font.Gotham,
         Text = "By " .. gameData.Creator,
-        TextSize = 10,
+        TextSize = 9,
         TextColor3 = CurrentTheme.TextSecondary,
         TextXAlignment = Enum.TextXAlignment.Left,
         Parent = GameCard,
@@ -1901,7 +1901,7 @@ for i, gameData in ipairs(GameDatabase) do
         Position = UDim2.new(0, 10, 0, 72),
         Font = Enum.Font.Gotham,
         Text = gameData.Visits .. " visits",
-        TextSize = 10,
+        TextSize = 9,
         TextColor3 = CurrentTheme.TextMuted,
         Parent = GameCard,
     })
@@ -1912,7 +1912,7 @@ for i, gameData in ipairs(GameDatabase) do
         Position = UDim2.new(0, 90, 0, 72),
         Font = Enum.Font.Gotham,
         Text = "♥ " .. gameData.Likes,
-        TextSize = 10,
+        TextSize = 9,
         TextColor3 = CurrentTheme.Error,
         Parent = GameCard,
     })
@@ -1923,7 +1923,7 @@ for i, gameData in ipairs(GameDatabase) do
         Position = UDim2.new(1, -80, 0, 78),
         Font = Enum.Font.GothamBold,
         Text = "Join",
-        TextSize = 10,
+        TextSize = 9,
         TextColor3 = Color3.fromRGB(255, 255, 255),
         Parent = GameCard,
     })
@@ -1981,7 +1981,7 @@ local PlayerListTitle = Create("TextLabel", {
 local PlayerListFrame = Create("Frame", {
     BackgroundColor3 = CurrentTheme.Secondary,
     BackgroundTransparency = 0.3,
-    Size = UDim2.new(1, 0, 0, 300),
+    Size = UDim2.new(1, 0, 0, 180),
     Position = UDim2.new(0, 0, 0, 30),
     Parent = PlayerCenterPage,
 })
@@ -2009,14 +2009,14 @@ local function UpdatePlayerList()
         local PlayerRow = Create("Frame", {
             BackgroundColor3 = CurrentTheme.Tertiary,
             BackgroundTransparency = 0.5,
-            Size = UDim2.new(1, 0, 0, 40),
+            Size = UDim2.new(1, 0, 0, 32),
             Parent = PlayerListFrame,
         })
         RoundCorners(PlayerRow, 8)
 
         local PlayerAvatar = Create("ImageLabel", {
             BackgroundColor3 = CurrentTheme.Surface,
-            Size = UDim2.new(0, 32, 0, 32),
+            Size = UDim2.new(0, 26, 0, 26),
             Position = UDim2.new(0, 5, 0, 4),
             Image = Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420),
             Parent = PlayerRow,
@@ -2029,7 +2029,7 @@ local function UpdatePlayerList()
             Position = UDim2.new(0, 45, 0, 2),
             Font = Enum.Font.GothamSemibold,
             Text = player.DisplayName .. " (@" .. player.Name .. ")",
-            TextSize = 12,
+            TextSize = 9,
             TextColor3 = CurrentTheme.TextPrimary,
             TextXAlignment = Enum.TextXAlignment.Left,
             Parent = PlayerRow,
@@ -2041,7 +2041,7 @@ local function UpdatePlayerList()
             Position = UDim2.new(1, -65, 0, 11),
             Font = Enum.Font.Gotham,
             Text = player == LocalPlayer and "You" or "Player",
-            TextSize = 10,
+            TextSize = 9,
             TextColor3 = player == LocalPlayer and CurrentTheme.Accent or CurrentTheme.TextMuted,
             Parent = PlayerRow,
         })
@@ -2067,7 +2067,7 @@ local StatsTitle = Create("TextLabel", {
 
 local StatsGrid = Create("Frame", {
     BackgroundTransparency = 1,
-    Size = UDim2.new(1, 0, 0, 200),
+    Size = UDim2.new(1, 0, 0, 140),
     Position = UDim2.new(0, 0, 0, 370),
     Parent = PlayerCenterPage,
 })
@@ -2086,8 +2086,8 @@ for i, stat in ipairs(PlayerStats) do
     local StatBox = Create("Frame", {
         BackgroundColor3 = CurrentTheme.Secondary,
         BackgroundTransparency = 0.3,
-        Size = UDim2.new(0.48, 0, 0, 80),
-        Position = UDim2.new(col * 0.52, 0, row * 90, 0),
+        Size = UDim2.new(0.48, 0, 0, 60),
+        Position = UDim2.new(col * 0.52, 0, row * 65, 0),
         Parent = StatsGrid,
     })
     RoundCorners(StatBox, 10)
@@ -2098,7 +2098,7 @@ for i, stat in ipairs(PlayerStats) do
         Position = UDim2.new(0, 10, 0, 10),
         Font = Enum.Font.Gotham,
         Text = stat.Icon,
-        TextSize = 18,
+        TextSize = 9,
         Parent = StatBox,
     })
 
@@ -2108,7 +2108,7 @@ for i, stat in ipairs(PlayerStats) do
         Position = UDim2.new(0, 10, 0, 45),
         Font = Enum.Font.Gotham,
         Text = stat.Label,
-        TextSize = 11,
+        TextSize = 9,
         TextColor3 = CurrentTheme.TextMuted,
         TextXAlignment = Enum.TextXAlignment.Left,
         Parent = StatBox,
@@ -2165,7 +2165,7 @@ local AvatarCenterPage = Create("Frame", {
 local AvatarPreview = Create("ViewportFrame", {
     BackgroundColor3 = CurrentTheme.Secondary,
     BackgroundTransparency = 0.3,
-    Size = UDim2.new(0, 250, 0, 300),
+    Size = UDim2.new(0, 150, 0, 180),
     Position = UDim2.new(0, 10, 0, 10),
     Parent = AvatarCenterPage,
 })
@@ -2177,7 +2177,7 @@ local AvatarPreviewLabel = Create("TextLabel", {
     Position = UDim2.new(0, 0, 0, 5),
     Font = Enum.Font.GothamBold,
     Text = "Avatar Preview",
-    TextSize = 14,
+    TextSize = 9,
     TextColor3 = CurrentTheme.TextPrimary,
     Parent = AvatarPreview,
 })
@@ -2192,8 +2192,8 @@ end
 
 local OutfitCategories = Create("Frame", {
     BackgroundTransparency = 1,
-    Size = UDim2.new(1, -270, 0, 300),
-    Position = UDim2.new(0, 270, 0, 10),
+    Size = UDim2.new(1, -165, 0, 180),
+    Position = UDim2.new(0, 160, 0, 10),
     Parent = AvatarCenterPage,
 })
 
@@ -2213,11 +2213,11 @@ for i, cat in ipairs(Categories) do
     local CatBtn = Create("TextButton", {
         BackgroundColor3 = CurrentTheme.Tertiary,
         BackgroundTransparency = 0.4,
-        Size = UDim2.new(1, 0, 0, 35),
-        Position = UDim2.new(0, 0, 0, 30 + (i-1) * 40),
+        Size = UDim2.new(1, 0, 0, 28),
+        Position = UDim2.new(0, 0, 0, 25 + (i-1) * 32),
         Font = Enum.Font.GothamSemibold,
         Text = cat,
-        TextSize = 13,
+        TextSize = 9,
         TextColor3 = CurrentTheme.TextPrimary,
         Parent = OutfitCategories,
     })
@@ -2287,8 +2287,8 @@ for i, anim in ipairs(AnimationDatabase) do
     local AnimBtn = Create("TextButton", {
         BackgroundColor3 = CurrentTheme.Secondary,
         BackgroundTransparency = 0.3,
-        Size = UDim2.new(0.235, -8, 0, 80),
-        Position = UDim2.new(col * 0.25, 0, row * 90, 0),
+        Size = UDim2.new(0.235, -5, 0, 60),
+        Position = UDim2.new(col * 0.25, 0, row * 65, 0),
         Text = "",
         Parent = AnimGrid,
     })
@@ -2311,7 +2311,7 @@ for i, anim in ipairs(AnimationDatabase) do
         Position = UDim2.new(0, 0, 0, 40),
         Font = Enum.Font.GothamSemibold,
         Text = anim.Name,
-        TextSize = 12,
+        TextSize = 9,
         TextColor3 = CurrentTheme.TextPrimary,
         Parent = AnimBtn,
     })
@@ -2322,7 +2322,7 @@ for i, anim in ipairs(AnimationDatabase) do
         Position = UDim2.new(0, 0, 0, 58),
         Font = Enum.Font.Gotham,
         Text = anim.Category,
-        TextSize = 10,
+        TextSize = 9,
         TextColor3 = CurrentTheme.TextMuted,
         Parent = AnimBtn,
     })
@@ -2369,7 +2369,7 @@ local MusicCenterPage = Create("Frame", {
 local MusicPlayer = Create("Frame", {
     BackgroundColor3 = CurrentTheme.Secondary,
     BackgroundTransparency = 0.3,
-    Size = UDim2.new(1, -20, 0, 200),
+    Size = UDim2.new(1, -10, 0, 140),
     Position = UDim2.new(0, 10, 0, 10),
     Parent = MusicCenterPage,
 })
@@ -2381,7 +2381,7 @@ local MusicTitle = Create("TextLabel", {
     Position = UDim2.new(0, 0, 0, 10),
     Font = Enum.Font.GothamBold,
     Text = "Music Player",
-    TextSize = 18,
+    TextSize = 9,
     TextColor3 = CurrentTheme.TextPrimary,
     Parent = MusicPlayer,
 })
@@ -2392,7 +2392,7 @@ local NowPlaying = Create("TextLabel", {
     Position = UDim2.new(0, 0, 0, 40),
     Font = Enum.Font.Gotham,
     Text = "Select a song to play",
-    TextSize = 14,
+    TextSize = 9,
     TextColor3 = CurrentTheme.TextSecondary,
     Parent = MusicPlayer,
 })
@@ -2423,7 +2423,7 @@ local PlayBtn = Create("TextButton", {
     Position = UDim2.new(0.5, -30, 0, 110),
     Font = Enum.Font.GothamBold,
     Text = "Play",
-    TextSize = 12,
+    TextSize = 9,
     TextColor3 = Color3.fromRGB(255, 255, 255),
     Parent = MusicPlayer,
 })
@@ -2435,7 +2435,7 @@ local StopBtn = Create("TextButton", {
     Position = UDim2.new(0.5, 40, 0, 110),
     Font = Enum.Font.GothamBold,
     Text = "Stop",
-    TextSize = 12,
+    TextSize = 9,
     TextColor3 = CurrentTheme.TextPrimary,
     Parent = MusicPlayer,
 })
@@ -2448,7 +2448,7 @@ local VolumeSlider = Create("TextBox", {
     Font = Enum.Font.Gotham,
     Text = "50",
     PlaceholderText = "Volume",
-    TextSize = 12,
+    TextSize = 9,
     TextColor3 = CurrentTheme.TextPrimary,
     Parent = MusicPlayer,
 })
@@ -2495,7 +2495,7 @@ for i, track in ipairs(MusicDatabase) do
         Position = UDim2.new(0, 10, 0, 5),
         Font = Enum.Font.GothamSemibold,
         Text = track.Name,
-        TextSize = 12,
+        TextSize = 9,
         TextColor3 = CurrentTheme.TextPrimary,
         TextXAlignment = Enum.TextXAlignment.Left,
         Parent = TrackBtn,
@@ -2507,7 +2507,7 @@ for i, track in ipairs(MusicDatabase) do
         Position = UDim2.new(0, 10, 0, 24),
         Font = Enum.Font.Gotham,
         Text = track.Artist .. " - " .. track.Duration,
-        TextSize = 10,
+        TextSize = 9,
         TextColor3 = CurrentTheme.TextMuted,
         TextXAlignment = Enum.TextXAlignment.Left,
         Parent = TrackBtn,
@@ -2519,7 +2519,7 @@ for i, track in ipairs(MusicDatabase) do
         Position = UDim2.new(1, -85, 0, 14),
         Font = Enum.Font.Gotham,
         Text = track.Genre,
-        TextSize = 10,
+        TextSize = 9,
         TextColor3 = CurrentTheme.Accent,
         Parent = TrackBtn,
     })
@@ -2596,7 +2596,7 @@ local AICenterPage = Create("Frame", {
 local AIChatFrame = Create("Frame", {
     BackgroundColor3 = CurrentTheme.Secondary,
     BackgroundTransparency = 0.3,
-    Size = UDim2.new(1, -20, 0, 350),
+    Size = UDim2.new(1, -10, 0, 220),
     Position = UDim2.new(0, 10, 0, 10),
     Parent = AICenterPage,
 })
@@ -2608,7 +2608,7 @@ local AIChatTitle = Create("TextLabel", {
     Position = UDim2.new(0, 0, 0, 10),
     Font = Enum.Font.GothamBold,
     Text = "AI Assistant",
-    TextSize = 18,
+    TextSize = 9,
     TextColor3 = CurrentTheme.TextPrimary,
     Parent = AIChatFrame,
 })
@@ -2640,11 +2640,11 @@ local AIChatPadding = Create("UIPadding", {
 
 local WelcomeMessage = Create("TextLabel", {
     BackgroundTransparency = 1,
-    Size = UDim2.new(1, 0, 0, 40),
+    Size = UDim2.new(1, 0, 0, 32),
     LayoutOrder = 1,
     Font = Enum.Font.Gotham,
     Text = "Welcome! I am your Meowl Hub AI assistant. How can I help you today?",
-    TextSize = 12,
+    TextSize = 9,
     TextColor3 = CurrentTheme.TextSecondary,
     TextWrapped = true,
     Parent = AIChatDisplay,
@@ -2666,7 +2666,7 @@ local AIInput = Create("TextBox", {
     Font = Enum.Font.Gotham,
     Text = "",
     PlaceholderText = "Ask me anything...",
-    TextSize = 12,
+    TextSize = 9,
     TextColor3 = CurrentTheme.TextPrimary,
     PlaceholderColor3 = CurrentTheme.TextMuted,
     Parent = AIInputFrame,
@@ -2678,7 +2678,7 @@ local AISendBtn = Create("TextButton", {
     Position = UDim2.new(1, -50, 0, 5),
     Font = Enum.Font.GothamBold,
     Text = "Send",
-    TextSize = 10,
+    TextSize = 9,
     TextColor3 = Color3.fromRGB(255, 255, 255),
     Parent = AIInputFrame,
 })
@@ -2691,7 +2691,7 @@ local function AddAIMessage(text, isUser)
         LayoutOrder = #AIChatDisplay:GetChildren(),
         Font = Enum.Font.Gotham,
         Text = (isUser and "You: " or "AI: ") .. text,
-        TextSize = 12,
+        TextSize = 9,
         TextColor3 = isUser and CurrentTheme.Accent or CurrentTheme.TextSecondary,
         TextWrapped = true,
         Parent = AIChatDisplay,
@@ -2741,7 +2741,7 @@ local CloudCenterPage = Create("Frame", {
 local CloudStats = Create("Frame", {
     BackgroundColor3 = CurrentTheme.Secondary,
     BackgroundTransparency = 0.3,
-    Size = UDim2.new(1, -20, 0, 150),
+    Size = UDim2.new(1, -10, 0, 120),
     Position = UDim2.new(0, 10, 0, 10),
     Parent = CloudCenterPage,
 })
@@ -2753,7 +2753,7 @@ local CloudTitle = Create("TextLabel", {
     Position = UDim2.new(0, 0, 0, 10),
     Font = Enum.Font.GothamBold,
     Text = "Cloud Storage",
-    TextSize = 18,
+    TextSize = 9,
     TextColor3 = CurrentTheme.TextPrimary,
     Parent = CloudStats,
 })
@@ -2781,7 +2781,7 @@ local StorageText = Create("TextLabel", {
     Position = UDim2.new(0, 0, 0, 80),
     Font = Enum.Font.Gotham,
     Text = "45% Used (4.5GB / 10GB)",
-    TextSize = 12,
+    TextSize = 9,
     TextColor3 = CurrentTheme.TextSecondary,
     Parent = CloudStats,
 })
@@ -2801,7 +2801,7 @@ for i, action in ipairs(CloudActions) do
         Position = UDim2.new((i-1) * 0.25 + 0.02, 0, 0, 110),
         Font = Enum.Font.GothamSemibold,
         Text = action.Name,
-        TextSize = 11,
+        TextSize = 9,
         TextColor3 = CurrentTheme.TextPrimary,
         Parent = CloudStats,
     })
@@ -2838,7 +2838,7 @@ local PremiumPadding = Create("UIPadding", {
 
 local PremiumBanner = Create("Frame", {
     BackgroundColor3 = Color3.fromRGB(255, 200, 80),
-    Size = UDim2.new(1, 0, 0, 120),
+    Size = UDim2.new(1, 0, 0, 80),
     LayoutOrder = 0,
     Parent = PremiumPage,
 })
@@ -2846,7 +2846,7 @@ RoundCorners(PremiumBanner, 12)
 
 local PremiumBannerTitle = Create("TextLabel", {
     BackgroundTransparency = 1,
-    Size = UDim2.new(1, 0, 0, 40),
+    Size = UDim2.new(1, 0, 0, 32),
     Position = UDim2.new(0, 0, 0, 20),
     Font = Enum.Font.GothamBold,
     Text = "PREMIUM",
@@ -2861,7 +2861,7 @@ local PremiumBannerSub = Create("TextLabel", {
     Position = UDim2.new(0, 0, 0, 65),
     Font = Enum.Font.Gotham,
     Text = "Unlock exclusive features and scripts!",
-    TextSize = 14,
+    TextSize = 9,
     TextColor3 = Color3.fromRGB(60, 40, 0),
     Parent = PremiumBanner,
 })
@@ -2882,8 +2882,8 @@ for i, feature in ipairs(PremiumFeatures) do
     local FeatureCard = Create("Frame", {
         BackgroundColor3 = CurrentTheme.Secondary,
         BackgroundTransparency = 0.3,
-        Size = UDim2.new(0.48, -5, 0, 90),
-        Position = UDim2.new(col * 0.52, 0, 130 + row * 100, 0),
+        Size = UDim2.new(0.48, -3, 0, 70),
+        Position = UDim2.new(col * 0.52, 0, 90 + row * 75, 0),
         Parent = PremiumPage,
     })
     RoundCorners(FeatureCard, 10)
@@ -2894,7 +2894,7 @@ for i, feature in ipairs(PremiumFeatures) do
         Position = UDim2.new(0, 10, 0, 10),
         Font = Enum.Font.GothamBold,
         Text = feature.Icon,
-        TextSize = 20,
+        TextSize = 9,
         TextColor3 = CurrentTheme.Warning,
         Parent = FeatureCard,
     })
@@ -2905,7 +2905,7 @@ for i, feature in ipairs(PremiumFeatures) do
         Position = UDim2.new(0, 45, 0, 10),
         Font = Enum.Font.GothamBold,
         Text = feature.Name,
-        TextSize = 13,
+        TextSize = 9,
         TextColor3 = CurrentTheme.TextPrimary,
         TextXAlignment = Enum.TextXAlignment.Left,
         Parent = FeatureCard,
@@ -2917,7 +2917,7 @@ for i, feature in ipairs(PremiumFeatures) do
         Position = UDim2.new(0, 10, 0, 40),
         Font = Enum.Font.Gotham,
         Text = feature.Desc,
-        TextSize = 11,
+        TextSize = 9,
         TextColor3 = CurrentTheme.TextSecondary,
         TextWrapped = true,
         Parent = FeatureCard,
@@ -2966,7 +2966,7 @@ local SettingsTitle = Create("TextLabel", {
     LayoutOrder = 0,
     Font = Enum.Font.GothamBold,
     Text = "Settings",
-    TextSize = 18,
+    TextSize = 9,
     TextColor3 = CurrentTheme.TextPrimary,
     TextXAlignment = Enum.TextXAlignment.Left,
     Parent = SettingsScroll,
@@ -2988,7 +2988,7 @@ for i, setting in ipairs(SettingItems) do
     local SettingRow = Create("Frame", {
         BackgroundColor3 = CurrentTheme.Secondary,
         BackgroundTransparency = 0.3,
-        Size = UDim2.new(1, 0, 0, 50),
+        Size = UDim2.new(1, 0, 0, 32),
         LayoutOrder = i,
         Parent = SettingsScroll,
     })
@@ -3000,7 +3000,7 @@ for i, setting in ipairs(SettingItems) do
         Position = UDim2.new(0, 15, 0, 0),
         Font = Enum.Font.GothamSemibold,
         Text = setting.Name,
-        TextSize = 13,
+        TextSize = 9,
         TextColor3 = CurrentTheme.TextPrimary,
         TextXAlignment = Enum.TextXAlignment.Left,
         Parent = SettingRow,
@@ -3013,7 +3013,7 @@ for i, setting in ipairs(SettingItems) do
             Position = UDim2.new(1, -65, 0.5, -13),
             Font = Enum.Font.GothamBold,
             Text = setting.Value and "ON" or "OFF",
-            TextSize = 11,
+            TextSize = 9,
             TextColor3 = Color3.fromRGB(255, 255, 255),
             Parent = SettingRow,
         })
@@ -3040,7 +3040,7 @@ for i, setting in ipairs(SettingItems) do
             Position = UDim2.new(1, -135, 0.5, -13),
             Font = Enum.Font.Gotham,
             Text = Config.Theme,
-            TextSize = 11,
+            TextSize = 9,
             TextColor3 = CurrentTheme.TextPrimary,
             Parent = SettingRow,
         })
@@ -3065,7 +3065,7 @@ for i, setting in ipairs(SettingItems) do
             Position = UDim2.new(1, -75, 0.5, -13),
             Font = Enum.Font.Gotham,
             Text = tostring(setting.Value),
-            TextSize = 11,
+            TextSize = 9,
             TextColor3 = CurrentTheme.TextPrimary,
             Parent = SettingRow,
         })
@@ -3094,7 +3094,7 @@ local FloatingCat = Create("TextButton", {
     Name = "FloatingCat",
     BackgroundColor3 = CurrentTheme.Accent,
     Size = UDim2.new(0, 50, 0, 50),
-    Position = UDim2.new(1, -70, 1, -70),
+    Position = UDim2.new(1, -60, 1, -60),
     Font = Enum.Font.GothamBold,
     Text = "C",
     TextSize = 24,
@@ -3108,9 +3108,9 @@ AddShadow(FloatingCat, 0.3)
 -- Cat bounce animation
 task.spawn(function()
     while true do
-        Tween(FloatingCat, {Position = UDim2.new(1, -70, 1, -75)}, 0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
+        Tween(FloatingCat, {Position = UDim2.new(1, -60, 1, -65)}, 0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
         task.wait(0.5)
-        Tween(FloatingCat, {Position = UDim2.new(1, -70, 1, -70)}, 0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
+        Tween(FloatingCat, {Position = UDim2.new(1, -60, 1, -60)}, 0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
         task.wait(0.5)
     end
 end)
@@ -3142,7 +3142,7 @@ FloatingCat.MouseButton1Click:Connect(function()
         Notify("Meowl Hub", "UI hidden. Press RightShift to show.", "info")
     else
         MainUI.Visible = true
-        Tween(MainUI, {Position = UDim2.new(0.5, -450, 0.5, -290)}, 0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+        Tween(MainUI, {Position = UDim2.new(0.5, -260, 0.5, -180)}, 0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
     end
 end)
 
@@ -3155,7 +3155,7 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
         PlaySound("6780919758", 0.15)
         MainUI.Visible = not MainUI.Visible
         if MainUI.Visible then
-            Tween(MainUI, {Position = UDim2.new(0.5, -450, 0.5, -290)}, 0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+            Tween(MainUI, {Position = UDim2.new(0.5, -260, 0.5, -180)}, 0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
         end
     end
 end)
@@ -3166,8 +3166,8 @@ end)
 
 -- Show UI immediately
 MainUI.Visible = true
-MainUI.Size = UDim2.new(0, 900, 0, 580)
-MainUI.Position = UDim2.new(0.5, -450, 0.5, -290)
+MainUI.Size = UDim2.new(0, 520, 0, 360)
+MainUI.Position = UDim2.new(0.5, -260, 0.5, -180)
 
 -- Welcome notification instantly
 task.spawn(function()
