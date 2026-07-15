@@ -704,137 +704,6 @@ local MeowlHub = Create("ScreenGui", {
 })
 
 -- ============================================================
---  LOADING SCREEN
--- ============================================================
-local LoadingScreen = Create("Frame", {
-    Name = "LoadingScreen",
-    BackgroundColor3 = CurrentTheme.Background,
-    Size = UDim2.new(1, 0, 1, 0),
-    ZIndex = 100,
-    Parent = MeowlHub,
-})
-
-local LoadingGradient = Create("UIGradient", {
-    Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, CurrentTheme.Background),
-        ColorSequenceKeypoint.new(0.5, CurrentTheme.Secondary),
-        ColorSequenceKeypoint.new(1, CurrentTheme.Background),
-    }),
-    Rotation = 90,
-    Parent = LoadingScreen,
-})
-
-local LoadingContainer = Create("Frame", {
-    BackgroundTransparency = 1,
-    Size = UDim2.new(0, 400, 0, 300),
-    Position = UDim2.new(0.5, -200, 0.5, -150),
-    Parent = LoadingScreen,
-})
-
-local LoadingLogo = Create("TextLabel", {
-    BackgroundTransparency = 1,
-    Size = UDim2.new(1, 0, 0, 80),
-    Position = UDim2.new(0, 0, 0, 20),
-    Font = Enum.Font.GothamBold,
-    Text = "[CAT]",
-    TextSize = 64,
-    TextColor3 = CurrentTheme.Accent,
-    Parent = LoadingContainer,
-})
-
-local LoadingTitle = Create("TextLabel", {
-    BackgroundTransparency = 1,
-    Size = UDim2.new(1, 0, 0, 40),
-    Position = UDim2.new(0, 0, 0, 100),
-    Font = Enum.Font.GothamBold,
-    Text = Config.HubName,
-    TextSize = 32,
-    TextColor3 = CurrentTheme.TextPrimary,
-    Parent = LoadingContainer,
-})
-
-local LoadingVersion = Create("TextLabel", {
-    BackgroundTransparency = 1,
-    Size = UDim2.new(1, 0, 0, 25),
-    Position = UDim2.new(0, 0, 0, 140),
-    Font = Enum.Font.GothamSemibold,
-    Text = Config.Version,
-    TextSize = 18,
-    TextColor3 = CurrentTheme.Accent,
-    Parent = LoadingContainer,
-})
-
-local ProgressBg = Create("Frame", {
-    BackgroundColor3 = CurrentTheme.Surface,
-    Size = UDim2.new(0, 300, 0, 6),
-    Position = UDim2.new(0.5, -150, 0, 190),
-    BorderSizePixel = 0,
-    Parent = LoadingContainer,
-})
-RoundCorners(ProgressBg, 3)
-
-local ProgressBar = Create("Frame", {
-    BackgroundColor3 = CurrentTheme.Accent,
-    Size = UDim2.new(0, 0, 1, 0),
-    BorderSizePixel = 0,
-    Parent = ProgressBg,
-})
-RoundCorners(ProgressBar, 3)
-AddGradient(ProgressBar, CurrentTheme.Gradient1, CurrentTheme.Gradient2, 0)
-
-local LoadingStatus = Create("TextLabel", {
-    BackgroundTransparency = 1,
-    Size = UDim2.new(1, 0, 0, 20),
-    Position = UDim2.new(0, 0, 0, 210),
-    Font = Enum.Font.Gotham,
-    Text = "Initializing...",
-    TextSize = 14,
-    TextColor3 = CurrentTheme.TextSecondary,
-    Parent = LoadingContainer,
-})
-
-local LoadingTip = Create("TextLabel", {
-    BackgroundTransparency = 1,
-    Size = UDim2.new(1, 0, 0, 20),
-    Position = UDim2.new(0, 0, 0, 240),
-    Font = Enum.Font.Gotham,
-    Text = "Tip: " .. Tips[math.random(1, #Tips)],
-    TextSize = 12,
-    TextColor3 = CurrentTheme.TextMuted,
-    Parent = LoadingContainer,
-})
-
--- Loading Animation
-local loadingSteps = {
-    {Text = "Loading assets...", Progress = 0.1},
-    {Text = "Connecting to server...", Progress = 0.25},
-    {Text = "Fetching scripts...", Progress = 0.4},
-    {Text = "Building UI...", Progress = 0.6},
-    {Text = "Applying theme...", Progress = 0.75},
-    {Text = "Finalizing...", Progress = 0.9},
-    {Text = "Ready!", Progress = 1},
-}
-
-local function RunLoadingAnimation()
-    for i, step in ipairs(loadingSteps) do
-        task.wait(0.3)
-        LoadingStatus.Text = step.Text
-        Tween(ProgressBar, {Size = UDim2.new(step.Progress, 0, 1, 0)}, 0.3)
-    end
-    task.wait(0.5)
-    Tween(LoadingScreen, {BackgroundTransparency = 1}, 0.5, nil, nil, function()
-        LoadingScreen.Visible = false
-        MeowlData.Stats.TotalOpens = MeowlData.Stats.TotalOpens + 1
-        Notify("Welcome", "Meowl Hub V10 loaded successfully!", "success")
-    end)
-    for _, child in ipairs(LoadingScreen:GetDescendants()) do
-        if child:IsA("GuiObject") then
-            Tween(child, {TextTransparency = 1, BackgroundTransparency = 1, ImageTransparency = 1}, 0.5)
-        end
-    end
-end
-
--- ============================================================
 --  MAIN UI FRAME
 -- ============================================================
 local MainUI = Create("Frame", {
@@ -3292,23 +3161,16 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
 end)
 
 -- ============================================================
---  FINAL SETUP
+--  FINAL SETUP (INSTANT - NO LOADING)
 -- ============================================================
 
--- Start loading animation
-task.spawn(RunLoadingAnimation)
+-- Show UI immediately
+MainUI.Visible = true
+MainUI.Size = UDim2.new(0, 900, 0, 580)
+MainUI.Position = UDim2.new(0.5, -450, 0.5, -290)
 
--- Hide MainUI initially until loading completes
-MainUI.Visible = false
-
--- Show MainUI after loading
-task.delay(3, function()
-    MainUI.Visible = true
-    Tween(MainUI, {Size = UDim2.new(0, 900, 0, 580), Position = UDim2.new(0.5, -450, 0.5, -290)}, 0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-end)
-
--- Welcome notification
-task.delay(3.5, function()
+-- Welcome notification instantly
+task.spawn(function()
     Notify("Meowl Hub V10", "Welcome " .. LocalPlayer.DisplayName .. "! Press RightShift to toggle.", "success")
 end)
 
