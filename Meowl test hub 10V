@@ -1,1853 +1,1421 @@
--- ═══════════════════════════════════════════════════════════════
---  MEOWL HUB V10 ULTIMATE - ROBLOX LUA SCRIPT
---  Version: 10.0 Ultimate | Owner: Superman72657
--- ═══════════════════════════════════════════════════════════════
+--[[
+    MEOWL EXECUTOR v2.0
+    Key: meowlsoul6777key11
+]]
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-local CoreGui = game:GetService("CoreGui")
-local Lighting = game:GetService("Lighting")
-local MarketplaceService = game:GetService("MarketplaceService")
 
 local LocalPlayer = Players.LocalPlayer
-local Mouse = LocalPlayer:GetMouse()
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
--- ═══════════════════════════════════════════════════════════════
---  CONFIGURATION
--- ═══════════════════════════════════════════════════════════════
-local Config = {
-    HubName = "Meowl Hub V10",
-    Version = "10.0 Ultimate",
-    Owner = "Superman72657",
-    Theme = "Dark",
-    AccentColor = Color3.fromRGB(255, 107, 157),
-    RGBMode = false,
-    BlurEnabled = true,
-    UIScale = 1,
-    AnimationSpeed = 0.3,
-    SoundEnabled = true,
-    NotificationsEnabled = true,
-    AutoSave = true,
-    Draggable = true,
-    Resizable = true,
+local CONFIG = {
+    ValidKey = "meowlsoul6777key11",
+    PrimaryColor = Color3.fromRGB(25, 25, 30),
+    SecondaryColor = Color3.fromRGB(35, 35, 42),
+    AccentColor = Color3.fromRGB(147, 112, 219),
+    AccentHover = Color3.fromRGB(167, 132, 239),
+    SuccessColor = Color3.fromRGB(88, 196, 120),
+    ErrorColor = Color3.fromRGB(237, 66, 69),
+    TextColor = Color3.fromRGB(255, 255, 255),
+    SubTextColor = Color3.fromRGB(180, 180, 190),
+    Font = Enum.Font.Gotham,
+    FontBold = Enum.Font.GothamBold,
+    FontMono = Enum.Font.Code,
 }
 
--- ═══════════════════════════════════════════════════════════════
---  UTILITY FUNCTIONS
--- ═══════════════════════════════════════════════════════════════
-local Utility = {}
+local SavedScripts = {}
+local CurrentTab = "Home"
+local ExecutorCodeInput = nil
+local ExecBtn = nil
+local OutputText = nil
+local OutputScroll = nil
 
-function Utility:Create(className, properties)
+local CloudScripts = {
+    {name = "Infinite Yield", desc = "Popular admin commands", code = "loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()"},
+    {name = "Dex Explorer", desc = "Advanced game explorer", code = "loadstring(game:HttpGet('https://raw.githubusercontent.com/infyiff/backup/main/dex.lua'))()"},
+    {name = "Remote Spy", desc = "Spy on remote events", code = "loadstring(game:HttpGet('https://github.com/exxtremestuffs/SimpleSpySource/raw/master/SimpleSpy.lua'))()"},
+    {name = "Aimbot", desc = "FPS aim assistance", code = "local Players = game:GetService('Players') local RunService = game:GetService('RunService') local LocalPlayer = Players.LocalPlayer local Mouse = LocalPlayer:GetMouse() local function getClosest() local closest, maxDist = nil, math.huge for _, player in pairs(Players:GetPlayers()) do if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild('Head') then local pos = workspace.CurrentCamera:WorldToViewportPoint(player.Character.Head.Position) local dist = (Vector2.new(pos.X, pos.Y) - Vector2.new(Mouse.X, Mouse.Y)).Magnitude if dist < maxDist then maxDist = dist closest = player.Character.Head end end end return closest end RunService.RenderStepped:Connect(function() if Mouse.Target then local target = getClosest() if target then end end end)"},
+    {name = "Speed Hack", desc = "Walkspeed modifier", code = "local Player = game.Players.LocalPlayer local Character = Player.Character or Player.CharacterAdded:Wait() local Humanoid = Character:WaitForChild('Humanoid') Humanoid.WalkSpeed = 100 Humanoid.JumpPower = 120 print('Speed & Jump modified!')"},
+    {name = "ESP", desc = "See players through walls", code = "local Players = game:GetService('Players') local RunService = game:GetService('RunService') local function createESP(player) if player == Players.LocalPlayer then return end local box = Instance.new('BoxHandleAdornment') box.Size = Vector3.new(4, 6, 2) box.Color3 = Color3.fromRGB(255, 0, 0) box.Transparency = 0.5 box.ZIndex = 5 box.AlwaysOnTop = true box.Adornee = player.Character:WaitForChild('HumanoidRootPart') box.Parent = player.Character end for _, player in pairs(Players:GetPlayers()) do if player.Character then createESP(player) end player.CharacterAdded:Connect(function() createESP(player) end) end"},
+    {name = "Fly Script", desc = "Toggle fly mode", code = "local Players = game:GetService('Players') local UserInputService = game:GetService('UserInputService') local RunService = game:GetService('RunService') local player = Players.LocalPlayer local character = player.Character or player.CharacterAdded:Wait() local hrp = character:WaitForChild('HumanoidRootPart') local flying = false local speed = 50 local bv, bg local function toggleFly() flying = not flying if flying then bv = Instance.new('BodyVelocity', hrp) bv.Velocity = Vector3.new(0, 0, 0) bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge) bg = Instance.new('BodyGyro', hrp) bg.MaxTorque = Vector3.new(math.huge, math.huge, math.huge) bg.P = 10000 print('Fly enabled') else if bv then bv:Destroy() end if bg then bg:Destroy() end print('Fly disabled') end end UserInputService.InputBegan:Connect(function(input) if input.KeyCode == Enum.KeyCode.F then toggleFly() end end) RunService.RenderStepped:Connect(function() if flying and bv and bg then local cam = workspace.CurrentCamera bg.CFrame = cam.CFrame local moveDir = Vector3.new(0, 0, 0) if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveDir = moveDir + cam.CFrame.LookVector end if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveDir = moveDir - cam.CFrame.LookVector end if UserInputService:IsKeyDown(Enum.KeyCode.A) then moveDir = moveDir - cam.CFrame.RightVector end if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveDir = moveDir + cam.CFrame.RightVector end if UserInputService:IsKeyDown(Enum.KeyCode.Space) then moveDir = moveDir + Vector3.new(0, 1, 0) end if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then moveDir = moveDir - Vector3.new(0, 1, 0) end bv.Velocity = moveDir * speed end end) print('Press F to toggle fly')"},
+    {name = "Tool Giver", desc = "Give yourself tools", code = "local tools = {'Sword', 'Gun', 'Bomb', 'Grapple'} local backpack = game.Players.LocalPlayer:WaitForChild('Backpack') for _, toolName in pairs(tools) do local tool = Instance.new('Tool') tool.Name = toolName tool.RequiresHandle = false tool.Parent = backpack print('Gave:', toolName) end"},
+    {name = "Full Bright", desc = "Remove darkness", code = "local Lighting = game:GetService('Lighting') Lighting.Brightness = 2 Lighting.ClockTime = 14 Lighting.FogEnd = 100000 Lighting.GlobalShadows = false Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128) for _, v in pairs(Lighting:GetDescendants()) do if v:IsA('Atmosphere') then v:Destroy() end if v:IsA('ColorCorrectionEffect') then v:Destroy() end end print('Full bright enabled!')"},
+    {name = "Server Info", desc = "Get server details", code = "local Players = game:GetService('Players') print('=== SERVER INFO ===') print('Place ID:', game.PlaceId) print('Job ID:', game.JobId) print('Players:', #Players:GetPlayers(), '/', Players.MaxPlayers) print('Your UserId:', Players.LocalPlayer.UserId) print('Server Time:', os.date('%Y-%m-%d %H:%M:%S')) for _, player in pairs(Players:GetPlayers()) do print(player.Name, '-', player.UserId, '-', player.Team and player.Team.Name or 'No Team') end"},
+    {name = "Music Player", desc = "Play music IDs", code = "local SoundService = game:GetService('SoundService') local sound = Instance.new('Sound') sound.Name = 'MeowlMusic' sound.SoundId = 'rbxassetid://142376088' sound.Volume = 0.5 sound.Looped = true sound.Parent = SoundService sound:Play() print('Playing music! Change the SoundId for different songs.')"},
+    {name = "Animation Changer", desc = "Custom animations", code = "local Players = game:GetService('Players') local player = Players.LocalPlayer local character = player.Character or player.CharacterAdded:Wait() local humanoid = character:WaitForChild('Humanoid') local Animate = character:WaitForChild('Animate') Animate.idle.Animation1.AnimationId = 'http://www.roblox.com/asset/?id=2510196951' Animate.idle.Animation2.AnimationId = 'http://www.roblox.com/asset/?id=2510197257' Animate.walk.WalkAnim.AnimationId = 'http://www.roblox.com/asset/?id=2510202577' Animate.run.RunAnim.AnimationId = 'http://www.roblox.com/asset/?id=2510198475' Animate.jump.JumpAnim.AnimationId = 'http://www.roblox.com/asset/?id=2510197830' Animate.fall.FallAnim.AnimationId = 'http://www.roblox.com/asset/?id=2510195896' print('Animations changed!')"}
+}
+
+local function Create(className, properties)
     local instance = Instance.new(className)
     for prop, value in pairs(properties or {}) do
-        if prop == "Parent" then continue end
         instance[prop] = value
-    end
-    if properties and properties.Parent then
-        instance.Parent = properties.Parent
     end
     return instance
 end
 
-function Utility:Tween(instance, properties, duration, easingStyle, easingDirection, callback)
-    duration = duration or Config.AnimationSpeed
-    easingStyle = easingStyle or Enum.EasingStyle.Quart
-    easingDirection = easingDirection or Enum.EasingDirection.Out
-    local tween = TweenService:Create(instance, TweenInfo.new(duration, easingStyle, easingDirection), properties)
-    if callback then tween.Completed:Connect(callback) end
+local function Tween(instance, properties, duration, style, direction)
+    local tween = TweenService:Create(instance,
+        TweenInfo.new(duration or 0.3, style or Enum.EasingStyle.Quart, direction or Enum.EasingDirection.Out),
+        properties)
     tween:Play()
     return tween
 end
 
-function Utility:Ripple(button, x, y)
-    local ripple = Utility:Create("Frame", {
-        Name = "Ripple",
+local function AddUICorner(parent, radius)
+    return Create("UICorner", {CornerRadius = UDim.new(0, radius or 10), Parent = parent})
+end
+
+local function AddShadow(parent)
+    local shadow = Create("ImageLabel", {
+        Name = "Shadow",
+        Parent = parent,
         AnchorPoint = Vector2.new(0.5, 0.5),
-        Position = UDim2.new(0, x, 0, y),
-        Size = UDim2.new(0, 0, 0, 0),
-        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-        BackgroundTransparency = 0.8,
-        BorderSizePixel = 0,
-        Parent = button,
-        ClipsDescendants = true,
-        ZIndex = button.ZIndex + 1,
+        Position = UDim2.new(0.5, 0, 0.5, 4),
+        Size = UDim2.new(1, 40, 1, 40),
+        BackgroundTransparency = 1,
+        Image = "rbxassetid://1316045217",
+        ImageColor3 = Color3.fromRGB(0, 0, 0),
+        ImageTransparency = 0.6,
+        ScaleType = Enum.ScaleType.Slice,
+        SliceCenter = Rect.new(10, 10, 118, 118),
+        ZIndex = -1,
     })
-    local corner = Utility:Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = ripple})
-    local maxSize = math.max(button.AbsoluteSize.X, button.AbsoluteSize.Y) * 2.5
-    Utility:Tween(ripple, {Size = UDim2.new(0, maxSize, 0, maxSize), BackgroundTransparency = 1}, 0.6, Enum.EasingStyle.Quart, Enum.EasingDirection.Out, function() ripple:Destroy() end)
+    return shadow
 end
 
-function Utility:PlaySound(soundId, volume)
-    if not Config.SoundEnabled then return end
-    volume = volume or 0.5
-    local sound = Utility:Create("Sound", {SoundId = soundId, Volume = volume, Parent = CoreGui})
-    sound:Play()
-    sound.Ended:Connect(function() sound:Destroy() end)
-end
+local ScreenGui = Create("ScreenGui", {
+    Name = "MeowlExecutor",
+    Parent = PlayerGui,
+    ResetOnSpawn = false,
+    ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+})
 
-function Utility:FormatNumber(num)
-    if num >= 1000000 then return string.format("%.1fM", num / 1000000)
-    elseif num >= 1000 then return string.format("%.1fK", num / 1000) end
-    return tostring(num)
-end
+-- KEY SYSTEM
+local KeyFrame = Create("Frame", {
+    Name = "KeyFrame",
+    Parent = ScreenGui,
+    Size = UDim2.new(0, 440, 0, 340),
+    Position = UDim2.new(0.5, -220, 0.5, -170),
+    BackgroundColor3 = CONFIG.PrimaryColor,
+    BorderSizePixel = 0,
+    ClipsDescendants = true,
+})
 
-function Utility:GetPing()
-    local ping = 0
-    pcall(function() ping = LocalPlayer:GetNetworkPing() * 1000 end)
-    return math.floor(ping)
-end
+AddUICorner(KeyFrame, 14)
+Create("UIStroke", {Color = Color3.fromRGB(70, 70, 85), Thickness = 1.5, Parent = KeyFrame})
+AddShadow(KeyFrame)
 
--- ═══════════════════════════════════════════════════════════════
---  THEME SYSTEM
--- ═══════════════════════════════════════════════════════════════
-local Themes = {
-    Dark = {
-        Background = Color3.fromRGB(10, 10, 15),
-        BackgroundSecondary = Color3.fromRGB(18, 18, 26),
-        Card = Color3.fromRGB(20, 20, 35),
-        TextPrimary = Color3.fromRGB(241, 245, 249),
-        TextSecondary = Color3.fromRGB(148, 163, 184),
-        TextMuted = Color3.fromRGB(100, 116, 139),
-        Border = Color3.fromRGB(255, 255, 255),
-        BorderTransparency = 0.92,
-    },
-    Light = {
-        Background = Color3.fromRGB(248, 250, 252),
-        BackgroundSecondary = Color3.fromRGB(255, 255, 255),
-        Card = Color3.fromRGB(255, 255, 255),
-        TextPrimary = Color3.fromRGB(15, 23, 42),
-        TextSecondary = Color3.fromRGB(71, 85, 105),
-        TextMuted = Color3.fromRGB(148, 163, 184),
-        Border = Color3.fromRGB(0, 0, 0),
-        BorderTransparency = 0.9,
-    },
-    Midnight = {
-        Background = Color3.fromRGB(2, 6, 23),
-        BackgroundSecondary = Color3.fromRGB(15, 23, 42),
-        Card = Color3.fromRGB(30, 41, 59),
-        TextPrimary = Color3.fromRGB(226, 232, 240),
-        TextSecondary = Color3.fromRGB(148, 163, 184),
-        TextMuted = Color3.fromRGB(100, 116, 139),
-        Border = Color3.fromRGB(255, 255, 255),
-        BorderTransparency = 0.94,
-    },
-    Ocean = {
-        Background = Color3.fromRGB(3, 7, 30),
-        BackgroundSecondary = Color3.fromRGB(12, 20, 69),
-        Card = Color3.fromRGB(15, 52, 96),
-        TextPrimary = Color3.fromRGB(186, 230, 253),
-        TextSecondary = Color3.fromRGB(125, 211, 252),
-        TextMuted = Color3.fromRGB(56, 189, 248),
-        Border = Color3.fromRGB(56, 189, 248),
-        BorderTransparency = 0.85,
-    },
-    Purple = {
-        Background = Color3.fromRGB(20, 10, 30),
-        BackgroundSecondary = Color3.fromRGB(40, 20, 60),
-        Card = Color3.fromRGB(60, 30, 90),
-        TextPrimary = Color3.fromRGB(233, 213, 255),
-        TextSecondary = Color3.fromRGB(192, 132, 252),
-        TextMuted = Color3.fromRGB(168, 85, 247),
-        Border = Color3.fromRGB(192, 132, 252),
-        BorderTransparency = 0.85,
-    },
-    Green = {
-        Background = Color3.fromRGB(5, 20, 10),
-        BackgroundSecondary = Color3.fromRGB(10, 40, 20),
-        Card = Color3.fromRGB(20, 83, 45),
-        TextPrimary = Color3.fromRGB(220, 252, 231),
-        TextSecondary = Color3.fromRGB(134, 239, 172),
-        TextMuted = Color3.fromRGB(74, 222, 128),
-        Border = Color3.fromRGB(74, 222, 128),
-        BorderTransparency = 0.85,
-    },
-    Red = {
-        Background = Color3.fromRGB(20, 5, 5),
-        BackgroundSecondary = Color3.fromRGB(40, 10, 10),
-        Card = Color3.fromRGB(80, 20, 20),
-        TextPrimary = Color3.fromRGB(254, 226, 226),
-        TextSecondary = Color3.fromRGB(252, 165, 165),
-        TextMuted = Color3.fromRGB(248, 113, 113),
-        Border = Color3.fromRGB(248, 113, 113),
-        BorderTransparency = 0.85,
-    },
-    Gold = {
-        Background = Color3.fromRGB(20, 15, 5),
-        BackgroundSecondary = Color3.fromRGB(40, 30, 10),
-        Card = Color3.fromRGB(69, 52, 16),
-        TextPrimary = Color3.fromRGB(254, 243, 199),
-        TextSecondary = Color3.fromRGB(253, 224, 71),
-        TextMuted = Color3.fromRGB(234, 179, 8),
-        Border = Color3.fromRGB(234, 179, 8),
-        BorderTransparency = 0.85,
-    },
-    Neon = {
-        Background = Color3.fromRGB(0, 0, 0),
-        BackgroundSecondary = Color3.fromRGB(10, 10, 10),
-        Card = Color3.fromRGB(20, 20, 20),
-        TextPrimary = Color3.fromRGB(255, 255, 255),
-        TextSecondary = Color3.fromRGB(0, 255, 255),
-        TextMuted = Color3.fromRGB(255, 0, 255),
-        Border = Color3.fromRGB(0, 255, 255),
-        BorderTransparency = 0.8,
-    },
+local KeyLogo = Create("TextLabel", {
+    Name = "Logo",
+    Parent = KeyFrame,
+    Size = UDim2.new(1, -30, 0, 40),
+    Position = UDim2.new(0, 15, 0, 18),
+    BackgroundTransparency = 1,
+    Text = "MEOWL EXECUTOR",
+    TextColor3 = CONFIG.AccentColor,
+    TextSize = 26,
+    Font = CONFIG.FontBold,
+    TextXAlignment = Enum.TextXAlignment.Center,
+})
+
+local KeySubtitle = Create("TextLabel", {
+    Name = "Subtitle",
+    Parent = KeyFrame,
+    Size = UDim2.new(1, -30, 0, 20),
+    Position = UDim2.new(0, 15, 0, 58),
+    BackgroundTransparency = 1,
+    Text = "Enter your access key to unlock the executor",
+    TextColor3 = CONFIG.SubTextColor,
+    TextSize = 13,
+    Font = CONFIG.Font,
+    TextXAlignment = Enum.TextXAlignment.Center,
+})
+
+local KeyDisplayFrame = Create("Frame", {
+    Name = "KeyDisplay",
+    Parent = KeyFrame,
+    Size = UDim2.new(1, -30, 0, 55),
+    Position = UDim2.new(0, 15, 0, 95),
+    BackgroundColor3 = CONFIG.SecondaryColor,
+    BorderSizePixel = 0,
+})
+
+AddUICorner(KeyDisplayFrame, 10)
+Create("UIStroke", {Color = Color3.fromRGB(80, 80, 95), Thickness = 1, Parent = KeyDisplayFrame})
+
+local KeyLabel = Create("TextLabel", {
+    Name = "KeyLabel",
+    Parent = KeyDisplayFrame,
+    Size = UDim2.new(0.55, -10, 1, 0),
+    Position = UDim2.new(0, 15, 0, 0),
+    BackgroundTransparency = 1,
+    Text = CONFIG.ValidKey,
+    TextColor3 = CONFIG.AccentColor,
+    TextSize = 15,
+    Font = CONFIG.FontMono,
+    TextXAlignment = Enum.TextXAlignment.Left,
+})
+
+local CopyBtn = Create("TextButton", {
+    Name = "CopyBtn",
+    Parent = KeyDisplayFrame,
+    Size = UDim2.new(0, 100, 0, 38),
+    Position = UDim2.new(1, -115, 0.5, -19),
+    BackgroundColor3 = CONFIG.AccentColor,
+    BorderSizePixel = 0,
+    Text = "Copy Key",
+    TextColor3 = CONFIG.TextColor,
+    TextSize = 14,
+    Font = CONFIG.FontBold,
+    AutoButtonColor = false,
+})
+
+AddUICorner(CopyBtn, 8)
+
+CopyBtn.MouseEnter:Connect(function()
+    Tween(CopyBtn, {BackgroundColor3 = CONFIG.AccentHover}, 0.2)
+end)
+CopyBtn.MouseLeave:Connect(function()
+    Tween(CopyBtn, {BackgroundColor3 = CONFIG.AccentColor}, 0.2)
+end)
+
+CopyBtn.MouseButton1Click:Connect(function()
+    KeyLabel.Text = "Copied to clipboard!"
+    KeyLabel.TextColor3 = CONFIG.SuccessColor
+    task.delay(2, function()
+        KeyLabel.Text = CONFIG.ValidKey
+        KeyLabel.TextColor3 = CONFIG.AccentColor
+    end)
+end)
+
+Create("Frame", {
+    Name = "Divider",
+    Parent = KeyFrame,
+    Size = UDim2.new(1, -30, 0, 1),
+    Position = UDim2.new(0, 15, 0, 168),
+    BackgroundColor3 = Color3.fromRGB(60, 60, 70),
+    BorderSizePixel = 0,
+})
+
+local KeyInputLabel = Create("TextLabel", {
+    Name = "InputLabel",
+    Parent = KeyFrame,
+    Size = UDim2.new(1, -30, 0, 18),
+    Position = UDim2.new(0, 15, 0, 182),
+    BackgroundTransparency = 1,
+    Text = "ENTER ACCESS KEY:",
+    TextColor3 = CONFIG.SubTextColor,
+    TextSize = 12,
+    Font = CONFIG.FontBold,
+    TextXAlignment = Enum.TextXAlignment.Left,
+})
+
+local KeyInput = Create("TextBox", {
+    Name = "KeyInput",
+    Parent = KeyFrame,
+    Size = UDim2.new(1, -30, 0, 48),
+    Position = UDim2.new(0, 15, 0, 205),
+    BackgroundColor3 = CONFIG.SecondaryColor,
+    BorderSizePixel = 0,
+    Text = "",
+    PlaceholderText = "Paste your key here...",
+    TextColor3 = CONFIG.TextColor,
+    PlaceholderColor3 = Color3.fromRGB(100, 100, 110),
+    TextSize = 15,
+    Font = CONFIG.FontMono,
+    ClearTextOnFocus = false,
+})
+
+AddUICorner(KeyInput, 10)
+Create("UIStroke", {Color = Color3.fromRGB(80, 80, 95), Thickness = 1, Parent = KeyInput})
+
+KeyInput.Focused:Connect(function()
+    Tween(KeyInput, {BackgroundColor3 = Color3.fromRGB(45, 45, 55)}, 0.2)
+end)
+KeyInput.FocusLost:Connect(function()
+    Tween(KeyInput, {BackgroundColor3 = CONFIG.SecondaryColor}, 0.2)
+end)
+
+local UnlockBtn = Create("TextButton", {
+    Name = "UnlockBtn",
+    Parent = KeyFrame,
+    Size = UDim2.new(1, -30, 0, 48),
+    Position = UDim2.new(0, 15, 0, 268),
+    BackgroundColor3 = CONFIG.AccentColor,
+    BorderSizePixel = 0,
+    Text = "Unlock Meowl Executor",
+    TextColor3 = CONFIG.TextColor,
+    TextSize = 16,
+    Font = CONFIG.FontBold,
+    AutoButtonColor = false,
+})
+
+AddUICorner(UnlockBtn, 10)
+
+UnlockBtn.MouseEnter:Connect(function()
+    Tween(UnlockBtn, {BackgroundColor3 = CONFIG.AccentHover}, 0.2)
+end)
+UnlockBtn.MouseLeave:Connect(function()
+    Tween(UnlockBtn, {BackgroundColor3 = CONFIG.AccentColor}, 0.2)
+end)
+
+local StatusLabel = Create("TextLabel", {
+    Name = "Status",
+    Parent = KeyFrame,
+    Size = UDim2.new(1, -30, 0, 18),
+    Position = UDim2.new(0, 15, 1, -28),
+    BackgroundTransparency = 1,
+    Text = "",
+    TextColor3 = CONFIG.ErrorColor,
+    TextSize = 12,
+    Font = CONFIG.Font,
+    TextXAlignment = Enum.TextXAlignment.Center,
+})
+
+-- MAIN FRAME
+local MainFrame = Create("Frame", {
+    Name = "MainFrame",
+    Parent = ScreenGui,
+    Size = UDim2.new(0, 800, 0, 550),
+    Position = UDim2.new(0.5, -400, 0.5, -275),
+    BackgroundColor3 = CONFIG.PrimaryColor,
+    BorderSizePixel = 0,
+    ClipsDescendants = true,
+    Visible = false,
+})
+
+AddUICorner(MainFrame, 14)
+Create("UIStroke", {Color = Color3.fromRGB(70, 70, 85), Thickness = 1.5, Parent = MainFrame})
+AddShadow(MainFrame)
+
+-- TOP BAR
+local TopBar = Create("Frame", {
+    Name = "TopBar",
+    Parent = MainFrame,
+    Size = UDim2.new(1, 0, 0, 50),
+    BackgroundColor3 = Color3.fromRGB(30, 30, 38),
+    BorderSizePixel = 0,
+})
+
+AddUICorner(TopBar, 14)
+Create("Frame", {Name = "Fix", Parent = TopBar, Size = UDim2.new(1, 0, 0.5, 0), Position = UDim2.new(0, 0, 0.5, 0), BackgroundColor3 = TopBar.BackgroundColor3, BorderSizePixel = 0})
+
+local Logo = Create("TextLabel", {
+    Name = "Logo",
+    Parent = TopBar,
+    Size = UDim2.new(0, 200, 1, 0),
+    Position = UDim2.new(0, 18, 0, 0),
+    BackgroundTransparency = 1,
+    Text = "MEOWL",
+    TextColor3 = CONFIG.AccentColor,
+    TextSize = 22,
+    Font = CONFIG.FontBold,
+    TextXAlignment = Enum.TextXAlignment.Left,
+})
+
+local Version = Create("TextLabel", {
+    Name = "Version",
+    Parent = TopBar,
+    Size = UDim2.new(0, 60, 1, 0),
+    Position = UDim2.new(0, 100, 0, 0),
+    BackgroundTransparency = 1,
+    Text = "v2.0",
+    TextColor3 = CONFIG.SubTextColor,
+    TextSize = 13,
+    Font = CONFIG.Font,
+    TextXAlignment = Enum.TextXAlignment.Left,
+})
+
+local MinimizeBtn = Create("TextButton", {
+    Name = "Minimize",
+    Parent = TopBar,
+    Size = UDim2.new(0, 34, 0, 34),
+    Position = UDim2.new(1, -85, 0.5, -17),
+    BackgroundColor3 = Color3.fromRGB(60, 60, 70),
+    BorderSizePixel = 0,
+    Text = "-",
+    TextColor3 = CONFIG.TextColor,
+    TextSize = 20,
+    Font = CONFIG.FontBold,
+    AutoButtonColor = false,
+})
+
+AddUICorner(MinimizeBtn, 8)
+
+local CloseBtn = Create("TextButton", {
+    Name = "Close",
+    Parent = TopBar,
+    Size = UDim2.new(0, 34, 0, 34),
+    Position = UDim2.new(1, -42, 0.5, -17),
+    BackgroundColor3 = CONFIG.ErrorColor,
+    BorderSizePixel = 0,
+    Text = "X",
+    TextColor3 = CONFIG.TextColor,
+    TextSize = 14,
+    Font = CONFIG.FontBold,
+    AutoButtonColor = false,
+})
+
+AddUICorner(CloseBtn, 8)
+
+local isMinimized = false
+MinimizeBtn.MouseButton1Click:Connect(function()
+    isMinimized = not isMinimized
+    if isMinimized then
+        Tween(MainFrame, {Size = UDim2.new(0, 800, 0, 50)}, 0.3)
+        ContentFrame.Visible = false
+    else
+        Tween(MainFrame, {Size = UDim2.new(0, 800, 0, 550)}, 0.3)
+        task.delay(0.3, function() ContentFrame.Visible = true end)
+    end
+end)
+
+CloseBtn.MouseButton1Click:Connect(function()
+    Tween(MainFrame, {Size = UDim2.new(0, 800, 0, 0)}, 0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+    task.delay(0.3, function() MainFrame.Visible = false end)
+end)
+
+-- SIDEBAR
+local Sidebar = Create("Frame", {
+    Name = "Sidebar",
+    Parent = MainFrame,
+    Size = UDim2.new(0, 160, 1, -50),
+    Position = UDim2.new(0, 0, 0, 50),
+    BackgroundColor3 = Color3.fromRGB(28, 28, 35),
+    BorderSizePixel = 0,
+})
+
+local Tabs = {
+    {name = "Home", id = "Home"},
+    {name = "Executor", id = "Executor"},
+    {name = "Cloud", id = "Cloud"},
+    {name = "Settings", id = "Settings"},
 }
 
-local CurrentTheme = Themes[Config.Theme] or Themes.Dark
+local TabButtons = {}
+local TabContents = {}
 
--- ═══════════════════════════════════════════════════════════════
---  NOTIFICATION SYSTEM
--- ═══════════════════════════════════════════════════════════════
-local NotificationSystem = {}
-NotificationSystem.Queue = {}
-
-function NotificationSystem:Show(title, message, notifType, duration)
-    if not Config.NotificationsEnabled then return end
-    duration = duration or 4
-    notifType = notifType or "info"
-
-    local colors = {
-        success = Color3.fromRGB(74, 222, 128),
-        error = Color3.fromRGB(248, 113, 113),
-        warning = Color3.fromRGB(251, 191, 36),
-        info = Color3.fromRGB(96, 165, 250),
-    }
-    local icons = {success = "✓", error = "✕", warning = "⚠", info = "ℹ"}
-
-    local notifGui = Utility:Create("ScreenGui", {
-        Name = "MeowlNotification_" .. tostring(tick()),
-        Parent = CoreGui,
-        ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
-    })
-
-    local container = Utility:Create("Frame", {
-        Size = UDim2.new(0, 320, 0, 80),
-        Position = UDim2.new(1, -340, 0, -100),
-        BackgroundColor3 = CurrentTheme.Card,
-        BackgroundTransparency = 0.1,
-        BorderSizePixel = 0,
-        Parent = notifGui,
-    })
-    local corner = Utility:Create("UICorner", {CornerRadius = UDim.new(0, 12), Parent = container})
-    local stroke = Utility:Create("UIStroke", {Color = colors[notifType], Thickness = 1.5, Transparency = 0.5, Parent = container})
-
-    local icon = Utility:Create("TextLabel", {
-        Size = UDim2.new(0, 40, 0, 40), Position = UDim2.new(0, 16, 0, 20),
-        BackgroundColor3 = colors[notifType], BackgroundTransparency = 0.85,
-        Text = icons[notifType], TextColor3 = colors[notifType], TextSize = 20,
-        Font = Enum.Font.GothamBold, Parent = container,
-    })
-    Utility:Create("UICorner", {CornerRadius = UDim.new(0, 8), Parent = icon})
-
-    local titleLabel = Utility:Create("TextLabel", {
-        Size = UDim2.new(1, -80, 0, 20), Position = UDim2.new(0, 68, 0, 18),
-        BackgroundTransparency = 1, Text = title, TextColor3 = CurrentTheme.TextPrimary,
-        TextSize = 14, Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = container,
-    })
-
-    local messageLabel = Utility:Create("TextLabel", {
-        Size = UDim2.new(1, -80, 0, 30), Position = UDim2.new(0, 68, 0, 38),
-        BackgroundTransparency = 1, Text = message, TextColor3 = CurrentTheme.TextSecondary,
-        TextSize = 12, Font = Enum.Font.Gotham, TextXAlignment = Enum.TextXAlignment.Left,
-        TextWrapped = true, Parent = container,
-    })
-
-    local progressBar = Utility:Create("Frame", {
-        Size = UDim2.new(1, 0, 0, 3), Position = UDim2.new(0, 0, 1, -3),
-        BackgroundColor3 = colors[notifType], BackgroundTransparency = 0.3,
-        BorderSizePixel = 0, Parent = container,
-    })
-    Utility:Create("UICorner", {CornerRadius = UDim.new(0, 2), Parent = progressBar})
-
-    Utility:Tween(container, {Position = UDim2.new(1, -340, 0, 80 + (#self.Queue * 90))}, 0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-    Utility:Tween(progressBar, {Size = UDim2.new(0, 0, 0, 3)}, duration, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, function()
-        Utility:Tween(container, {Position = UDim2.new(1, 20, 0, container.Position.Y.Offset), BackgroundTransparency = 1}, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In, function()
-            notifGui:Destroy()
-            table.remove(self.Queue, 1)
-        end)
-    end)
-
-    table.insert(self.Queue, notifGui)
-    Utility:PlaySound("rbxassetid://9113083740", 0.3)
-end
-
--- ═══════════════════════════════════════════════════════════════
---  MAIN HUB CLASS
--- ═══════════════════════════════════════════════════════════════
-local MeowlHub = {}
-MeowlHub.Pages = {}
-MeowlHub.NavButtons = {}
-MeowlHub.CurrentPage = "Dashboard"
-
-function MeowlHub:Init()
-    -- Main ScreenGui
-    self.Gui = Utility:Create("ScreenGui", {
-        Name = "MeowlHubV10",
-        Parent = CoreGui,
-        ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
-        ResetOnSpawn = false,
-    })
-
-    -- Blur effect
-    if Config.BlurEnabled then
-        self.Blur = Utility:Create("BlurEffect", {Size = 0, Parent = Lighting})
+local function SwitchTab(tabId)
+    CurrentTab = tabId
+    for id, content in pairs(TabContents) do
+        content.Visible = (id == tabId)
     end
-
-    -- Main container
-    self.Main = Utility:Create("Frame", {
-        Name = "Main",
-        Size = UDim2.new(0, 1100, 0, 650),
-        Position = UDim2.new(0.5, -550, 0.5, -325),
-        BackgroundColor3 = CurrentTheme.Background,
-        BackgroundTransparency = 0.05,
-        BorderSizePixel = 0,
-        Parent = self.Gui,
-        ClipsDescendants = true,
-    })
-    Utility:Create("UICorner", {CornerRadius = UDim.new(0, 16), Parent = self.Main})
-    Utility:Create("UIStroke", {Color = Config.AccentColor, Thickness = 1.5, Transparency = 0.7, Parent = self.Main})
-    Utility:Create("UIScale", {Scale = Config.UIScale, Parent = self.Main})
-    Utility:Create("UIGradient", {
-        Color = ColorSequence.new({ColorSequenceKeypoint.new(0, CurrentTheme.Background), ColorSequenceKeypoint.new(1, CurrentTheme.BackgroundSecondary)}),
-        Rotation = 45, Parent = self.Main,
-    })
-
-    -- Build all sections
-    self:BuildSidebar()
-    self:BuildTopbar()
-    self:BuildDashboard()
-    self:BuildScriptsPage()
-    self:BuildPlayerCenter()
-    self:BuildAvatarCenter()
-    self:BuildAnimationCenter()
-    self:BuildMusicCenter()
-    self:BuildAICenter()
-    self:BuildCloudCenter()
-    self:BuildPremiumPage()
-    self:BuildSettingsPage()
-    self:BuildFloatingCat()
-    self:BuildLoadingScreen()
-
-    -- Start systems
-    self:StartClock()
-    self:StartPerformanceMonitor()
-    self:StartRGBMode()
-
-    -- Show loading screen then reveal
-    self:ShowLoadingScreen()
-
-    -- Make draggable
-    if Config.Draggable then
-        self:MakeDraggable(self.Main)
-    end
-
-    -- Welcome notification
-    task.delay(2, function()
-        NotificationSystem:Show("Welcome!", "Meowl Hub V10 Ultimate loaded successfully!", "success", 5)
-    end)
-end
-
--- ═══════════════════════════════════════════════════════════════
---  SIDEBAR
--- ═══════════════════════════════════════════════════════════════
-function MeowlHub:BuildSidebar()
-    self.Sidebar = Utility:Create("Frame", {
-        Name = "Sidebar",
-        Size = UDim2.new(0, 240, 1, 0),
-        BackgroundColor3 = CurrentTheme.BackgroundSecondary,
-        BackgroundTransparency = 0.3,
-        BorderSizePixel = 0,
-        Parent = self.Main,
-    })
-    Utility:Create("UICorner", {CornerRadius = UDim.new(0, 16), Parent = self.Sidebar})
-
-    -- Logo
-    local logoContainer = Utility:Create("Frame", {
-        Size = UDim2.new(1, 0, 0, 80), BackgroundTransparency = 1, Parent = self.Sidebar,
-    })
-
-    local logoIcon = Utility:Create("TextLabel", {
-        Size = UDim2.new(0, 44, 0, 44), Position = UDim2.new(0, 20, 0, 18),
-        BackgroundColor3 = Config.AccentColor, BackgroundTransparency = 0.2,
-        Text = "🐱", TextSize = 24, Parent = logoContainer,
-    })
-    Utility:Create("UICorner", {CornerRadius = UDim.new(0, 12), Parent = logoIcon})
-
-    Utility:Create("TextLabel", {
-        Size = UDim2.new(0, 150, 0, 22), Position = UDim2.new(0, 76, 0, 20),
-        BackgroundTransparency = 1, Text = "Meowl Hub", TextColor3 = CurrentTheme.TextPrimary,
-        TextSize = 18, Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = logoContainer,
-    })
-
-    Utility:Create("TextLabel", {
-        Size = UDim2.new(0, 150, 0, 16), Position = UDim2.new(0, 76, 0, 42),
-        BackgroundTransparency = 1, Text = "V10 ULTIMATE", TextColor3 = Config.AccentColor,
-        TextSize = 10, Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = logoContainer,
-    })
-
-    -- Navigation
-    local navY = 90
-    local sections = {
-        {title = "MAIN", items = {
-            {name = "Dashboard", icon = "🏠", page = "Dashboard"},
-            {name = "Scripts", icon = "📜", page = "Scripts", badge = "10"},
-            {name = "Hub Browser", icon = "🌐", page = "HubBrowser"},
-            {name = "Game Browser", icon = "🎮", page = "GameBrowser"},
-        }},
-        {title = "FEATURES", items = {
-            {name = "Player Center", icon = "👤", page = "PlayerCenter"},
-            {name = "Avatar Center", icon = "🎭", page = "AvatarCenter"},
-            {name = "Animation Center", icon = "🏃", page = "AnimationCenter"},
-            {name = "Music Center", icon = "🎵", page = "MusicCenter"},
-            {name = "AI Center", icon = "🤖", page = "AICenter"},
-            {name = "Cloud Center", icon = "☁️", page = "CloudCenter"},
-        }},
-        {title = "SYSTEM", items = {
-            {name = "Premium", icon = "👑", page = "Premium", badge = "PRO", badgeColor = Color3.fromRGB(251, 191, 36)},
-            {name = "Settings", icon = "⚙️", page = "Settings"},
-        }},
-    }
-
-    for _, section in ipairs(sections) do
-        Utility:Create("TextLabel", {
-            Size = UDim2.new(1, -32, 0, 20), Position = UDim2.new(0, 16, 0, navY),
-            BackgroundTransparency = 1, Text = section.title, TextColor3 = CurrentTheme.TextMuted,
-            TextSize = 10, Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left,
-            Parent = self.Sidebar,
-        })
-        navY = navY + 24
-
-        for _, item in ipairs(section.items) do
-            local navButton = Utility:Create("TextButton", {
-                Name = item.name .. "Nav",
-                Size = UDim2.new(1, -24, 0, 40), Position = UDim2.new(0, 12, 0, navY),
-                BackgroundColor3 = CurrentTheme.Card, BackgroundTransparency = 1,
-                Text = "", Parent = self.Sidebar,
-            })
-            Utility:Create("UICorner", {CornerRadius = UDim.new(0, 10), Parent = navButton})
-
-            Utility:Create("TextLabel", {
-                Size = UDim2.new(0, 30, 0, 30), Position = UDim2.new(0, 10, 0, 5),
-                BackgroundTransparency = 1, Text = item.icon, TextSize = 16,
-                Parent = navButton,
-            })
-
-            local navText = Utility:Create("TextLabel", {
-                Size = UDim2.new(1, -80, 1, 0), Position = UDim2.new(0, 46, 0, 0),
-                BackgroundTransparency = 1, Text = item.name, TextColor3 = CurrentTheme.TextSecondary,
-                TextSize = 13, Font = Enum.Font.GothamSemibold, TextXAlignment = Enum.TextXAlignment.Left,
-                Parent = navButton,
-            })
-
-            if item.badge then
-                local badge = Utility:Create("TextLabel", {
-                    Size = UDim2.new(0, item.badge == "PRO" and 36 or 24, 0, 18),
-                    Position = UDim2.new(1, -44, 0, 11),
-                    BackgroundColor3 = item.badgeColor or Config.AccentColor,
-                    BackgroundTransparency = 0.2,
-                    Text = item.badge, TextColor3 = Color3.fromRGB(255, 255, 255),
-                    TextSize = 9, Font = Enum.Font.GothamBold, Parent = navButton,
-                })
-                Utility:Create("UICorner", {CornerRadius = UDim.new(0, 6), Parent = badge})
-            end
-
-            navButton.MouseEnter:Connect(function()
-                Utility:Tween(navButton, {BackgroundTransparency = 0.85}, 0.2)
-                Utility:Tween(navText, {TextColor3 = CurrentTheme.TextPrimary}, 0.2)
-            end)
-
-            navButton.MouseLeave:Connect(function()
-                if self.CurrentPage ~= item.page then
-                    Utility:Tween(navButton, {BackgroundTransparency = 1}, 0.2)
-                    Utility:Tween(navText, {TextColor3 = CurrentTheme.TextSecondary}, 0.2)
-                end
-            end)
-
-            navButton.MouseButton1Click:Connect(function()
-                self:SwitchPage(item.page)
-                Utility:PlaySound("rbxassetid://9113083740", 0.2)
-            end)
-
-            self.NavButtons[item.page] = {button = navButton, text = navText}
-            navY = navY + 44
-        end
-        navY = navY + 8
-    end
-end
-
--- ═══════════════════════════════════════════════════════════════
---  TOPBAR
--- ═══════════════════════════════════════════════════════════════
-function MeowlHub:BuildTopbar()
-    self.Topbar = Utility:Create("Frame", {
-        Name = "Topbar",
-        Size = UDim2.new(1, -240, 0, 60),
-        Position = UDim2.new(0, 240, 0, 0),
-        BackgroundColor3 = CurrentTheme.BackgroundSecondary,
-        BackgroundTransparency = 0.5,
-        BorderSizePixel = 0,
-        Parent = self.Main,
-    })
-
-    self.BreadcrumbText = Utility:Create("TextLabel", {
-        Size = UDim2.new(0, 300, 0, 60), Position = UDim2.new(0, 20, 0, 0),
-        BackgroundTransparency = 1, Text = "Meowl Hub / Dashboard",
-        TextColor3 = CurrentTheme.TextSecondary, TextSize = 13,
-        Font = Enum.Font.Gotham, TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = self.Topbar,
-    })
-
-    -- Search
-    local searchBox = Utility:Create("Frame", {
-        Size = UDim2.new(0, 280, 0, 36), Position = UDim2.new(1, -420, 0, 12),
-        BackgroundColor3 = CurrentTheme.Card, BackgroundTransparency = 0.5,
-        BorderSizePixel = 0, Parent = self.Topbar,
-    })
-    Utility:Create("UICorner", {CornerRadius = UDim.new(0, 10), Parent = searchBox})
-
-    Utility:Create("TextLabel", {
-        Size = UDim2.new(0, 30, 0, 30), Position = UDim2.new(0, 8, 0, 3),
-        BackgroundTransparency = 1, Text = "🔍", TextSize = 14, Parent = searchBox,
-    })
-
-    Utility:Create("TextBox", {
-        Size = UDim2.new(1, -50, 1, 0), Position = UDim2.new(0, 40, 0, 0),
-        BackgroundTransparency = 1, Text = "", PlaceholderText = "Search scripts, games, hubs...",
-        TextColor3 = CurrentTheme.TextPrimary, PlaceholderColor3 = CurrentTheme.TextMuted,
-        TextSize = 12, Font = Enum.Font.Gotham, TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = searchBox,
-    })
-
-    -- Topbar buttons
-    local buttons = {
-        {icon = "🔔", pos = -120, callback = function() NotificationSystem:Show("Notifications", "No new notifications", "info") end},
-        {icon = "🎨", pos = -80, callback = function() self:ToggleTheme() end},
-        {icon = "⚙️", pos = -40, callback = function() self:SwitchPage("Settings") end},
-    }
-
-    for _, btn in ipairs(buttons) do
-        local button = Utility:Create("TextButton", {
-            Size = UDim2.new(0, 32, 0, 32), Position = UDim2.new(1, btn.pos, 0, 14),
-            BackgroundColor3 = CurrentTheme.Card, BackgroundTransparency = 0.5,
-            Text = btn.icon, TextSize = 14, Parent = self.Topbar,
-        })
-        Utility:Create("UICorner", {CornerRadius = UDim.new(0, 8), Parent = button})
-
-        button.MouseEnter:Connect(function() Utility:Tween(button, {BackgroundTransparency = 0.2}, 0.2) end)
-        button.MouseLeave:Connect(function() Utility:Tween(button, {BackgroundTransparency = 0.5}, 0.2) end)
-        button.MouseButton1Click:Connect(function()
-            btn.callback()
-            Utility:PlaySound("rbxassetid://9113083740", 0.2)
-        end)
-    end
-
-    -- Notification dot
-    local notifDot = Utility:Create("Frame", {
-        Size = UDim2.new(0, 8, 0, 8), Position = UDim2.new(1, -128, 0, 16),
-        BackgroundColor3 = Color3.fromRGB(248, 113, 113), BorderSizePixel = 0,
-        Parent = self.Topbar,
-    })
-    Utility:Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = notifDot})
-
-    task.spawn(function()
-        while notifDot.Parent do
-            Utility:Tween(notifDot, {Size = UDim2.new(0, 10, 0, 10), Position = UDim2.new(1, -129, 0, 15)}, 0.5)
-            task.wait(0.5)
-            if notifDot.Parent then Utility:Tween(notifDot, {Size = UDim2.new(0, 8, 0, 8), Position = UDim2.new(1, -128, 0, 16)}, 0.5) end
-            task.wait(0.5)
-        end
-    end)
-end
-
--- ═══════════════════════════════════════════════════════════════
---  DASHBOARD PAGE
--- ═══════════════════════════════════════════════════════════════
-function MeowlHub:BuildDashboard()
-    self.Pages.Dashboard = Utility:Create("ScrollingFrame", {
-        Name = "Dashboard",
-        Size = UDim2.new(1, -240, 1, -60), Position = UDim2.new(0, 240, 0, 60),
-        BackgroundTransparency = 1, ScrollBarThickness = 4,
-        ScrollBarImageColor3 = Config.AccentColor,
-        CanvasSize = UDim2.new(0, 0, 0, 900),
-        Parent = self.Main, Visible = true,
-    })
-
-    local d = self.Pages.Dashboard
-
-    -- Welcome Banner
-    local welcomeBanner = Utility:Create("Frame", {
-        Size = UDim2.new(0, 560, 0, 120), Position = UDim2.new(0, 20, 0, 20),
-        BackgroundColor3 = Config.AccentColor, BackgroundTransparency = 0.85,
-        BorderSizePixel = 0, Parent = d,
-    })
-    Utility:Create("UICorner", {CornerRadius = UDim.new(0, 16), Parent = welcomeBanner})
-    Utility:Create("UIStroke", {Color = Config.AccentColor, Thickness = 1, Transparency = 0.6, Parent = welcomeBanner})
-
-    Utility:Create("TextLabel", {
-        Size = UDim2.new(1, -40, 0, 30), Position = UDim2.new(0, 20, 0, 20),
-        BackgroundTransparency = 1, Text = "Welcome back, Superman72657! 🐱",
-        TextColor3 = CurrentTheme.TextPrimary, TextSize = 20,
-        Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = welcomeBanner,
-    })
-
-    Utility:Create("TextLabel", {
-        Size = UDim2.new(1, -40, 0, 20), Position = UDim2.new(0, 20, 0, 52),
-        BackgroundTransparency = 1, Text = "Meowl Hub V10 Ultimate is running at peak performance.",
-        TextColor3 = CurrentTheme.TextSecondary, TextSize = 13,
-        Font = Enum.Font.Gotham, TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = welcomeBanner,
-    })
-
-    self.ClockLabel = Utility:Create("TextLabel", {
-        Size = UDim2.new(0, 200, 0, 40), Position = UDim2.new(1, -220, 0, 20),
-        BackgroundTransparency = 1, Text = "09:55", TextColor3 = CurrentTheme.TextPrimary,
-        TextSize = 32, Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Right,
-        Parent = welcomeBanner,
-    })
-
-    self.DateLabel = Utility:Create("TextLabel", {
-        Size = UDim2.new(0, 200, 0, 18), Position = UDim2.new(1, -220, 0, 62),
-        BackgroundTransparency = 1, Text = "Monday, July 14, 2026",
-        TextColor3 = CurrentTheme.TextMuted, TextSize = 12,
-        Font = Enum.Font.Gotham, TextXAlignment = Enum.TextXAlignment.Right,
-        Parent = welcomeBanner,
-    })
-
-    -- Profile Card
-    local profileCard = Utility:Create("Frame", {
-        Size = UDim2.new(0, 280, 0, 280), Position = UDim2.new(0, 600, 0, 20),
-        BackgroundColor3 = CurrentTheme.Card, BackgroundTransparency = 0.1,
-        BorderSizePixel = 0, Parent = d,
-    })
-    Utility:Create("UICorner", {CornerRadius = UDim.new(0, 16), Parent = profileCard})
-    Utility:Create("UIStroke", {Color = CurrentTheme.Border, Thickness = 1, Transparency = CurrentTheme.BorderTransparency, Parent = profileCard})
-
-    local avatarFrame = Utility:Create("Frame", {
-        Size = UDim2.new(0, 88, 0, 88), Position = UDim2.new(0.5, -44, 0, 20),
-        BackgroundColor3 = Config.AccentColor, BorderSizePixel = 0, Parent = profileCard,
-    })
-    Utility:Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = avatarFrame})
-
-    local avatarImage = Utility:Create("ImageLabel", {
-        Size = UDim2.new(1, -6, 1, -6), Position = UDim2.new(0, 3, 0, 3),
-        BackgroundTransparency = 1,
-        Image = "rbxthumb://type=AvatarHeadShot&id=" .. LocalPlayer.UserId .. "&w=150&h=150",
-        Parent = avatarFrame,
-    })
-    Utility:Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = avatarImage})
-
-    local statusDot = Utility:Create("Frame", {
-        Size = UDim2.new(0, 18, 0, 18), Position = UDim2.new(1, -22, 1, -22),
-        BackgroundColor3 = Color3.fromRGB(74, 222, 128), BorderSizePixel = 0, Parent = avatarFrame,
-    })
-    Utility:Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = statusDot})
-    Utility:Create("UIStroke", {Color = CurrentTheme.Card, Thickness = 3, Parent = statusDot})
-
-    Utility:Create("TextLabel", {
-        Size = UDim2.new(1, 0, 0, 24), Position = UDim2.new(0, 0, 0, 118),
-        BackgroundTransparency = 1, Text = LocalPlayer.DisplayName,
-        TextColor3 = CurrentTheme.TextPrimary, TextSize = 18,
-        Font = Enum.Font.GothamBold, Parent = profileCard,
-    })
-
-    Utility:Create("TextLabel", {
-        Size = UDim2.new(1, 0, 0, 18), Position = UDim2.new(0, 0, 0, 142),
-        BackgroundTransparency = 1, Text = "@" .. LocalPlayer.Name,
-        TextColor3 = CurrentTheme.TextMuted, TextSize = 12,
-        Font = Enum.Font.Gotham, Parent = profileCard,
-    })
-
-    -- Badges
-    local badgesFrame = Utility:Create("Frame", {
-        Size = UDim2.new(1, -20, 0, 24), Position = UDim2.new(0, 10, 0, 168),
-        BackgroundTransparency = 1, Parent = profileCard,
-    })
-
-    local badgeList = {
-        {text = "OWNER", color = Config.AccentColor},
-        {text = "PREMIUM", color = Color3.fromRGB(251, 191, 36)},
-        {text = "VIP", color = Color3.fromRGB(139, 92, 246)},
-    }
-
-    local badgeX = 0
-    for _, badge in ipairs(badgeList) do
-        local badgeLabel = Utility:Create("TextLabel", {
-            Size = UDim2.new(0, 0, 0, 20), Position = UDim2.new(0, badgeX, 0, 2),
-            BackgroundColor3 = badge.color, BackgroundTransparency = 0.8,
-            Text = "  " .. badge.text .. "  ", TextColor3 = badge.color,
-            TextSize = 9, Font = Enum.Font.GothamBold, Parent = badgesFrame,
-        })
-        Utility:Create("UICorner", {CornerRadius = UDim.new(0, 10), Parent = badgeLabel})
-        badgeX = badgeX + 70
-    end
-
-    -- Profile stats
-    local statsRow = Utility:Create("Frame", {
-        Size = UDim2.new(1, -20, 0, 50), Position = UDim2.new(0, 10, 0, 210),
-        BackgroundTransparency = 1, Parent = profileCard,
-    })
-
-    local statsData = {{value = "247", label = "Friends"}, {value = "1.2K", label = "Followers"}, {value = "89", label = "Following"}}
-    for i, stat in ipairs(statsData) do
-        local sf = Utility:Create("Frame", {Size = UDim2.new(0, 80, 1, 0), Position = UDim2.new(0, (i-1)*87, 0, 0), BackgroundTransparency = 1, Parent = statsRow})
-        Utility:Create("TextLabel", {Size = UDim2.new(1, 0, 0, 24), BackgroundTransparency = 1, Text = stat.value, TextColor3 = CurrentTheme.TextPrimary, TextSize = 18, Font = Enum.Font.GothamBold, Parent = sf})
-        Utility:Create("TextLabel", {Size = UDim2.new(1, 0, 0, 16), Position = UDim2.new(0, 0, 0, 26), BackgroundTransparency = 1, Text = stat.label, TextColor3 = CurrentTheme.TextMuted, TextSize = 10, Font = Enum.Font.Gotham, Parent = sf})
-    end
-
-    -- Server Info Card
-    local serverCard = Utility:Create("Frame", {
-        Size = UDim2.new(0, 280, 0, 200), Position = UDim2.new(0, 20, 0, 160),
-        BackgroundColor3 = CurrentTheme.Card, BackgroundTransparency = 0.1,
-        BorderSizePixel = 0, Parent = d,
-    })
-    Utility:Create("UICorner", {CornerRadius = UDim.new(0, 16), Parent = serverCard})
-    Utility:Create("UIStroke", {Color = CurrentTheme.Border, Thickness = 1, Transparency = CurrentTheme.BorderTransparency, Parent = serverCard})
-
-    Utility:Create("TextLabel", {
-        Size = UDim2.new(1, -20, 0, 20), Position = UDim2.new(0, 14, 0, 14),
-        BackgroundTransparency = 1, Text = "SERVER INFO", TextColor3 = CurrentTheme.TextMuted,
-        TextSize = 10, Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = serverCard,
-    })
-
-    local serverIcon = Utility:Create("Frame", {
-        Size = UDim2.new(0, 48, 0, 48), Position = UDim2.new(0, 14, 0, 44),
-        BackgroundColor3 = Color3.fromRGB(59, 130, 246), BorderSizePixel = 0, Parent = serverCard,
-    })
-    Utility:Create("UICorner", {CornerRadius = UDim.new(0, 12), Parent = serverIcon})
-    Utility:Create("TextLabel", {Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, Text = "🎮", TextSize = 24, Parent = serverIcon})
-
-    local gameName = "Unknown Game"
-    pcall(function() gameName = MarketplaceService:GetProductInfo(game.PlaceId).Name end)
-
-    Utility:Create("TextLabel", {
-        Size = UDim2.new(0, 200, 0, 20), Position = UDim2.new(0, 72, 0, 48),
-        BackgroundTransparency = 1, Text = gameName, TextColor3 = CurrentTheme.TextPrimary,
-        TextSize = 14, Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = serverCard,
-    })
-
-    Utility:Create("TextLabel", {
-        Size = UDim2.new(0, 200, 0, 16), Position = UDim2.new(0, 72, 0, 70),
-        BackgroundTransparency = 1, Text = "Place ID: " .. game.PlaceId,
-        TextColor3 = CurrentTheme.TextMuted, TextSize = 11,
-        Font = Enum.Font.Gotham, TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = serverCard,
-    })
-
-    local serverMetrics = {{label = "Players", value = tostring(#Players:GetPlayers())}, {label = "Max", value = tostring(game.Players.MaxPlayers)}, {label = "Region", value = "US-East"}, {label = "Status", value = "Online"}}
-    for i, metric in ipairs(serverMetrics) do
-        local row = math.floor((i-1)/2)
-        local col = (i-1)%2
-        local mf = Utility:Create("Frame", {
-            Size = UDim2.new(0, 120, 0, 50), Position = UDim2.new(0, 14 + col*130, 0, 110 + row*58),
-            BackgroundColor3 = CurrentTheme.BackgroundSecondary, BackgroundTransparency = 0.5,
-            BorderSizePixel = 0, Parent = serverCard,
-        })
-        Utility:Create("UICorner", {CornerRadius = UDim.new(0, 10), Parent = mf})
-        Utility:Create("TextLabel", {Size = UDim2.new(1, 0, 0, 16), Position = UDim2.new(0, 0, 0, 6), BackgroundTransparency = 1, Text = metric.label, TextColor3 = CurrentTheme.TextMuted, TextSize = 9, Font = Enum.Font.GothamBold, Parent = mf})
-        Utility:Create("TextLabel", {Size = UDim2.new(1, 0, 0, 20), Position = UDim2.new(0, 0, 0, 22), BackgroundTransparency = 1, Text = metric.value, TextColor3 = CurrentTheme.TextPrimary, TextSize = 15, Font = Enum.Font.GothamBold, Parent = mf})
-    end
-
-    -- Quick Actions
-    local actionsCard = Utility:Create("Frame", {
-        Size = UDim2.new(0, 560, 0, 180), Position = UDim2.new(0, 20, 0, 380),
-        BackgroundColor3 = CurrentTheme.Card, BackgroundTransparency = 0.1,
-        BorderSizePixel = 0, Parent = d,
-    })
-    Utility:Create("UICorner", {CornerRadius = UDim.new(0, 16), Parent = actionsCard})
-    Utility:Create("UIStroke", {Color = CurrentTheme.Border, Thickness = 1, Transparency = CurrentTheme.BorderTransparency, Parent = actionsCard})
-
-    Utility:Create("TextLabel", {
-        Size = UDim2.new(1, -20, 0, 20), Position = UDim2.new(0, 14, 0, 14),
-        BackgroundTransparency = 1, Text = "QUICK ACTIONS", TextColor3 = CurrentTheme.TextMuted,
-        TextSize = 10, Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = actionsCard,
-    })
-
-    local actions = {
-        {name = "Inject", icon = "💉", color = Config.AccentColor},
-        {name = "Auto Farm", icon = "🤖", color = Color3.fromRGB(74, 222, 128)},
-        {name = "ESP", icon = "👁️", color = Color3.fromRGB(96, 165, 250)},
-        {name = "Fly", icon = "✈️", color = Color3.fromRGB(251, 191, 36)},
-        {name = "Speed", icon = "⚡", color = Color3.fromRGB(248, 113, 113)},
-        {name = "Noclip", icon = "👻", color = Color3.fromRGB(192, 132, 252)},
-        {name = "God Mode", icon = "🛡️", color = Color3.fromRGB(16, 185, 129)},
-        {name = "Teleport", icon = "📍", color = Color3.fromRGB(6, 182, 212)},
-    }
-
-    for i, action in ipairs(actions) do
-        local col = (i-1)%4
-        local row = math.floor((i-1)/4)
-        local actionBtn = Utility:Create("TextButton", {
-            Size = UDim2.new(0, 120, 0, 60), Position = UDim2.new(0, 14 + col*136, 0, 44 + row*70),
-            BackgroundColor3 = CurrentTheme.BackgroundSecondary, BackgroundTransparency = 0.5,
-            Text = "", Parent = actionsCard,
-        })
-        Utility:Create("UICorner", {CornerRadius = UDim.new(0, 12), Parent = actionBtn})
-        Utility:Create("TextLabel", {Size = UDim2.new(0, 30, 0, 30), Position = UDim2.new(0.5, -15, 0, 8), BackgroundTransparency = 1, Text = action.icon, TextSize = 20, Parent = actionBtn})
-        local actionText = Utility:Create("TextLabel", {Size = UDim2.new(1, 0, 0, 16), Position = UDim2.new(0, 0, 0, 38), BackgroundTransparency = 1, Text = action.name, TextColor3 = CurrentTheme.TextSecondary, TextSize = 11, Font = Enum.Font.GothamSemibold, Parent = actionBtn})
-
-        actionBtn.MouseEnter:Connect(function()
-            Utility:Tween(actionBtn, {BackgroundTransparency = 0.2}, 0.2)
-            Utility:Tween(actionText, {TextColor3 = action.color}, 0.2)
-        end)
-        actionBtn.MouseLeave:Connect(function()
-            Utility:Tween(actionBtn, {BackgroundTransparency = 0.5}, 0.2)
-            Utility:Tween(actionText, {TextColor3 = CurrentTheme.TextSecondary}, 0.2)
-        end)
-        actionBtn.MouseButton1Click:Connect(function()
-            Utility:Ripple(actionBtn, 60, 30)
-            NotificationSystem:Show(action.name, action.name .. " activated!", "success")
-            Utility:PlaySound("rbxassetid://9113083740", 0.3)
-        end)
-    end
-
-    -- Stat cards
-    local statCards = {
-        {title = "Total Opens", value = "14,239", icon = "🚪", change = "+12%", color = Color3.fromRGB(74, 222, 128)},
-        {title = "Session Time", value = "4h 23m", icon = "⏱️", change = "+45m", color = Color3.fromRGB(251, 191, 36)},
-        {title = "Scripts Run", value = "892", icon = "📜", change = "+34", color = Config.AccentColor},
-        {title = "Daily Streak", value = "47", icon = "🔥", change = "Keep it up!", color = Color3.fromRGB(139, 92, 246)},
-    }
-
-    for i, stat in ipairs(statCards) do
-        local sc = Utility:Create("Frame", {
-            Size = UDim2.new(0, 132, 0, 120), Position = UDim2.new(0, 20 + (i-1)*148, 0, 580),
-            BackgroundColor3 = CurrentTheme.Card, BackgroundTransparency = 0.1,
-            BorderSizePixel = 0, Parent = d,
-        })
-        Utility:Create("UICorner", {CornerRadius = UDim.new(0, 14), Parent = sc})
-        Utility:Create("UIStroke", {Color = CurrentTheme.Border, Thickness = 1, Transparency = CurrentTheme.BorderTransparency, Parent = sc})
-
-        local si = Utility:Create("TextLabel", {Size = UDim2.new(0, 32, 0, 32), Position = UDim2.new(1, -42, 0, 10), BackgroundColor3 = stat.color, BackgroundTransparency = 0.85, Text = stat.icon, TextSize = 14, Parent = sc})
-        Utility:Create("UICorner", {CornerRadius = UDim.new(0, 8), Parent = si})
-        Utility:Create("TextLabel", {Size = UDim2.new(1, -16, 0, 30), Position = UDim2.new(0, 10, 0, 46), BackgroundTransparency = 1, Text = stat.value, TextColor3 = CurrentTheme.TextPrimary, TextSize = 22, Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left, Parent = sc})
-        Utility:Create("TextLabel", {Size = UDim2.new(1, -16, 0, 16), Position = UDim2.new(0, 10, 0, 78), BackgroundTransparency = 1, Text = stat.title, TextColor3 = CurrentTheme.TextMuted, TextSize = 10, Font = Enum.Font.Gotham, TextXAlignment = Enum.TextXAlignment.Left, Parent = sc})
-        Utility:Create("TextLabel", {Size = UDim2.new(1, -16, 0, 16), Position = UDim2.new(0, 10, 0, 96), BackgroundTransparency = 1, Text = stat.change, TextColor3 = stat.color, TextSize = 11, Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left, Parent = sc})
-    end
-end
-
--- ═══════════════════════════════════════════════════════════════
---  SCRIPTS PAGE
--- ═══════════════════════════════════════════════════════════════
-function MeowlHub:BuildScriptsPage()
-    self.Pages.Scripts = Utility:Create("ScrollingFrame", {
-        Name = "Scripts",
-        Size = UDim2.new(1, -240, 1, -60), Position = UDim2.new(0, 240, 0, 60),
-        BackgroundTransparency = 1, ScrollBarThickness = 4,
-        ScrollBarImageColor3 = Config.AccentColor,
-        CanvasSize = UDim2.new(0, 0, 0, 600),
-        Parent = self.Main, Visible = false,
-    })
-
-    local sp = self.Pages.Scripts
-
-    Utility:Create("TextLabel", {
-        Size = UDim2.new(1, -40, 0, 30), Position = UDim2.new(0, 20, 0, 20),
-        BackgroundTransparency = 1, Text = "📜 Script Library",
-        TextColor3 = CurrentTheme.TextPrimary, TextSize = 20,
-        Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = sp,
-    })
-
-    local filters = {"All", "Popular", "Recent", "Favorites", "Admin", "Game", "Utility", "ESP"}
-    local filterX = 20
-    for _, filter in ipairs(filters) do
-        local fb = Utility:Create("TextButton", {
-            Size = UDim2.new(0, 70, 0, 32), Position = UDim2.new(0, filterX, 0, 60),
-            BackgroundColor3 = filter == "All" and Config.AccentColor or CurrentTheme.Card,
-            BackgroundTransparency = filter == "All" and 0.7 or 0.5,
-            Text = filter, TextColor3 = filter == "All" and CurrentTheme.TextPrimary or CurrentTheme.TextSecondary,
-            TextSize = 12, Font = Enum.Font.GothamSemibold, Parent = sp,
-        })
-        Utility:Create("UICorner", {CornerRadius = UDim.new(0, 8), Parent = fb})
-        fb.MouseEnter:Connect(function() Utility:Tween(fb, {BackgroundTransparency = 0.3}, 0.2) end)
-        fb.MouseLeave:Connect(function() if filter ~= "All" then Utility:Tween(fb, {BackgroundTransparency = 0.5}, 0.2) end end)
-        filterX = filterX + 80
-    end
-
-    local scriptData = {
-        {name = "Infinite Yield", icon = "⚡", rating = "4.9", uses = "2.1M", tags = {"Admin", "CMD"}, color = Color3.fromRGB(255, 107, 157)},
-        {name = "Dark Dex V4", icon = "🔍", rating = "4.8", uses = "1.5M", tags = {"Dev", "Tools"}, color = Color3.fromRGB(59, 130, 246)},
-        {name = "Owl Hub", icon = "🦉", rating = "4.7", uses = "980K", tags = {"Games", "Aim"}, color = Color3.fromRGB(74, 222, 128)},
-        {name = "Synapse X UI", icon = "🧠", rating = "4.9", uses = "3.2M", tags = {"Premium", "UI"}, color = Color3.fromRGB(251, 191, 36)},
-        {name = "Remote Spy", icon = "📡", rating = "4.6", uses = "750K", tags = {"Dev", "Network"}, color = Color3.fromRGB(139, 92, 246)},
-        {name = "ESP Box", icon = "👁️", rating = "4.5", uses = "620K", tags = {"ESP", "Visual"}, color = Color3.fromRGB(248, 113, 113)},
-        {name = "Fly GUI", icon = "✈️", rating = "4.4", uses = "540K", tags = {"Fly", "GUI"}, color = Color3.fromRGB(6, 182, 212)},
-        {name = "Auto Farm", icon = "💰", rating = "4.7", uses = "890K", tags = {"Auto", "Farm"}, color = Color3.fromRGB(236, 72, 153)},
-        {name = "Aimbot Pro", icon = "🎯", rating = "4.8", uses = "1.1M", tags = {"Aim", "Combat"}, color = Color3.fromRGB(249, 115, 22)},
-        {name = "Anti-AFK", icon = "🛡️", rating = "4.3", uses = "430K", tags = {"AFK", "Utility"}, color = Color3.fromRGB(16, 185, 129)},
-    }
-
-    for i, script in ipairs(scriptData) do
-        local col = (i-1)%5
-        local row = math.floor((i-1)/5)
-        local sc = Utility:Create("TextButton", {
-            Size = UDim2.new(0, 170, 0, 200), Position = UDim2.new(0, 20 + col*186, 0, 110 + row*220),
-            BackgroundColor3 = CurrentTheme.Card, BackgroundTransparency = 0.1,
-            Text = "", Parent = sp,
-        })
-        Utility:Create("UICorner", {CornerRadius = UDim.new(0, 14), Parent = sc})
-        Utility:Create("UIStroke", {Color = CurrentTheme.Border, Thickness = 1, Transparency = CurrentTheme.BorderTransparency, Parent = sc})
-
-        local thumb = Utility:Create("Frame", {
-            Size = UDim2.new(1, 0, 0, 100), Position = UDim2.new(0, 0, 0, 0),
-            BackgroundColor3 = script.color, BackgroundTransparency = 0.8,
-            BorderSizePixel = 0, Parent = sc,
-        })
-        Utility:Create("UICorner", {CornerRadius = UDim.new(0, 14), Parent = thumb})
-        Utility:Create("TextLabel", {Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, Text = script.icon, TextSize = 36, Parent = thumb})
-
-        Utility:Create("TextLabel", {
-            Size = UDim2.new(1, -20, 0, 20), Position = UDim2.new(0, 10, 0, 110),
-            BackgroundTransparency = 1, Text = script.name, TextColor3 = CurrentTheme.TextPrimary,
-            TextSize = 13, Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left,
-            Parent = sc,
-        })
-
-        Utility:Create("TextLabel", {
-            Size = UDim2.new(1, -20, 0, 16), Position = UDim2.new(0, 10, 0, 132),
-            BackgroundTransparency = 1, Text = "⭐ " .. script.rating .. "  •  " .. script.uses .. " uses",
-            TextColor3 = CurrentTheme.TextMuted, TextSize = 11, Font = Enum.Font.Gotham,
-            TextXAlignment = Enum.TextXAlignment.Left, Parent = sc,
-        })
-
-        local tagX = 10
-        for _, tag in ipairs(script.tags) do
-            local t = Utility:Create("TextLabel", {
-                Size = UDim2.new(0, 0, 0, 18), Position = UDim2.new(0, tagX, 0, 156),
-                BackgroundColor3 = CurrentTheme.BackgroundSecondary, BackgroundTransparency = 0.5,
-                Text = "  " .. tag .. "  ", TextColor3 = CurrentTheme.TextMuted,
-                TextSize = 9, Font = Enum.Font.GothamSemibold, Parent = sc,
-            })
-            Utility:Create("UICorner", {CornerRadius = UDim.new(0, 4), Parent = t})
-            tagX = tagX + 50
-        end
-
-        sc.MouseEnter:Connect(function()
-            Utility:Tween(sc, {BackgroundTransparency = 0}, 0.2)
-            Utility:Tween(thumb, {BackgroundTransparency = 0.6}, 0.2)
-        end)
-        sc.MouseLeave:Connect(function()
-            Utility:Tween(sc, {BackgroundTransparency = 0.1}, 0.2)
-            Utility:Tween(thumb, {BackgroundTransparency = 0.8}, 0.2)
-        end)
-        sc.MouseButton1Click:Connect(function()
-            Utility:Ripple(sc, 85, 100)
-            NotificationSystem:Show("Script Loaded", script.name .. " executed successfully!", "success")
-            Utility:PlaySound("rbxassetid://9113083740", 0.3)
-        end)
-    end
-end
-
--- ═══════════════════════════════════════════════════════════════
---  PLAYER CENTER
--- ═══════════════════════════════════════════════════════════════
-function MeowlHub:BuildPlayerCenter()
-    self.Pages.PlayerCenter = Utility:Create("ScrollingFrame", {
-        Name = "PlayerCenter",
-        Size = UDim2.new(1, -240, 1, -60), Position = UDim2.new(0, 240, 0, 60),
-        BackgroundTransparency = 1, ScrollBarThickness = 4,
-        ScrollBarImageColor3 = Config.AccentColor,
-        CanvasSize = UDim2.new(0, 0, 0, 500),
-        Parent = self.Main, Visible = false,
-    })
-
-    local pc = self.Pages.PlayerCenter
-
-    Utility:Create("TextLabel", {
-        Size = UDim2.new(1, -40, 0, 30), Position = UDim2.new(0, 20, 0, 20),
-        BackgroundTransparency = 1, Text = "👤 Player Center",
-        TextColor3 = CurrentTheme.TextPrimary, TextSize = 20,
-        Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = pc,
-    })
-
-    -- Player list
-    local playerList = Utility:Create("Frame", {
-        Size = UDim2.new(0, 300, 0, 400), Position = UDim2.new(0, 20, 0, 60),
-        BackgroundColor3 = CurrentTheme.Card, BackgroundTransparency = 0.1,
-        BorderSizePixel = 0, Parent = pc,
-    })
-    Utility:Create("UICorner", {CornerRadius = UDim.new(0, 14), Parent = playerList})
-    Utility:Create("UIStroke", {Color = CurrentTheme.Border, Thickness = 1, Transparency = CurrentTheme.BorderTransparency, Parent = playerList})
-
-    Utility:Create("TextLabel", {
-        Size = UDim2.new(1, -20, 0, 20), Position = UDim2.new(0, 14, 0, 14),
-        BackgroundTransparency = 1, Text = "PLAYER LIST (" .. #Players:GetPlayers() .. ")",
-        TextColor3 = CurrentTheme.TextMuted, TextSize = 10,
-        Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = playerList,
-    })
-
-    local playerY = 44
-    for _, player in ipairs(Players:GetPlayers()) do
-        local pItem = Utility:Create("Frame", {
-            Size = UDim2.new(1, -20, 0, 50), Position = UDim2.new(0, 10, 0, playerY),
-            BackgroundColor3 = CurrentTheme.BackgroundSecondary, BackgroundTransparency = 0.5,
-            BorderSizePixel = 0, Parent = playerList,
-        })
-        Utility:Create("UICorner", {CornerRadius = UDim.new(0, 10), Parent = pItem})
-
-        local pAvatar = Utility:Create("ImageLabel", {
-            Size = UDim2.new(0, 36, 0, 36), Position = UDim2.new(0, 7, 0, 7),
-            BackgroundTransparency = 1,
-            Image = "rbxthumb://type=AvatarHeadShot&id=" .. player.UserId .. "&w=48&h=48",
-            Parent = pItem,
-        })
-        Utility:Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = pAvatar})
-
-        Utility:Create("TextLabel", {
-            Size = UDim2.new(0, 200, 0, 18), Position = UDim2.new(0, 52, 0, 8),
-            BackgroundTransparency = 1, Text = player.DisplayName,
-            TextColor3 = CurrentTheme.TextPrimary, TextSize = 13,
-            Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left,
-            Parent = pItem,
-        })
-
-        Utility:Create("TextLabel", {
-            Size = UDim2.new(0, 200, 0, 14), Position = UDim2.new(0, 52, 0, 26),
-            BackgroundTransparency = 1, Text = "@" .. player.Name,
-            TextColor3 = CurrentTheme.TextMuted, TextSize = 10,
-            Font = Enum.Font.Gotham, TextXAlignment = Enum.TextXAlignment.Left,
-            Parent = pItem,
-        })
-
-        playerY = playerY + 56
-    end
-
-    -- Player stats panel
-    local statsPanel = Utility:Create("Frame", {
-        Size = UDim2.new(0, 500, 0, 400), Position = UDim2.new(0, 340, 0, 60),
-        BackgroundColor3 = CurrentTheme.Card, BackgroundTransparency = 0.1,
-        BorderSizePixel = 0, Parent = pc,
-    })
-    Utility:Create("UICorner", {CornerRadius = UDim.new(0, 14), Parent = statsPanel})
-    Utility:Create("UIStroke", {Color = CurrentTheme.Border, Thickness = 1, Transparency = CurrentTheme.BorderTransparency, Parent = statsPanel})
-
-    Utility:Create("TextLabel", {
-        Size = UDim2.new(1, -20, 0, 20), Position = UDim2.new(0, 14, 0, 14),
-        BackgroundTransparency = 1, Text = "PLAYER STATS",
-        TextColor3 = CurrentTheme.TextMuted, TextSize = 10,
-        Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = statsPanel,
-    })
-
-    local stats = {
-        {label = "Health", value = "100/100", color = Color3.fromRGB(248, 113, 113)},
-        {label = "WalkSpeed", value = "16", color = Color3.fromRGB(96, 165, 250)},
-        {label = "JumpPower", value = "50", color = Color3.fromRGB(74, 222, 128)},
-        {label = "Team", value = "Neutral", color = Color3.fromRGB(251, 191, 36)},
-    }
-
-    for i, stat in ipairs(stats) do
-        local sf = Utility:Create("Frame", {
-            Size = UDim2.new(0, 230, 0, 80), Position = UDim2.new(0, 14 + ((i-1)%2)*246, 0, 50 + math.floor((i-1)/2)*96),
-            BackgroundColor3 = CurrentTheme.BackgroundSecondary, BackgroundTransparency = 0.5,
-            BorderSizePixel = 0, Parent = statsPanel,
-        })
-        Utility:Create("UICorner", {CornerRadius = UDim.new(0, 12), Parent = sf})
-
-        local bar = Utility:Create("Frame", {
-            Size = UDim2.new(0, 4, 0, 40), Position = UDim2.new(0, 14, 0, 20),
-            BackgroundColor3 = stat.color, BorderSizePixel = 0, Parent = sf,
-        })
-        Utility:Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = bar})
-
-        Utility:Create("TextLabel", {
-            Size = UDim2.new(0, 180, 0, 20), Position = UDim2.new(0, 28, 0, 14),
-            BackgroundTransparency = 1, Text = stat.label,
-            TextColor3 = CurrentTheme.TextMuted, TextSize = 11,
-            Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left,
-            Parent = sf,
-        })
-
-        Utility:Create("TextLabel", {
-            Size = UDim2.new(0, 180, 0, 30), Position = UDim2.new(0, 28, 0, 34),
-            BackgroundTransparency = 1, Text = stat.value,
-            TextColor3 = CurrentTheme.TextPrimary, TextSize = 22,
-            Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left,
-            Parent = sf,
-        })
-    end
-end
-
--- ═══════════════════════════════════════════════════════════════
---  AVATAR CENTER
--- ═══════════════════════════════════════════════════════════════
-function MeowlHub:BuildAvatarCenter()
-    self.Pages.AvatarCenter = Utility:Create("ScrollingFrame", {
-        Name = "AvatarCenter",
-        Size = UDim2.new(1, -240, 1, -60), Position = UDim2.new(0, 240, 0, 60),
-        BackgroundTransparency = 1, ScrollBarThickness = 4,
-        ScrollBarImageColor3 = Config.AccentColor,
-        CanvasSize = UDim2.new(0, 0, 0, 400),
-        Parent = self.Main, Visible = false,
-    })
-
-    local ac = self.Pages.AvatarCenter
-
-    Utility:Create("TextLabel", {
-        Size = UDim2.new(1, -40, 0, 30), Position = UDim2.new(0, 20, 0, 20),
-        BackgroundTransparency = 1, Text = "🎭 Avatar Center",
-        TextColor3 = CurrentTheme.TextPrimary, TextSize = 20,
-        Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = ac,
-    })
-
-    -- Avatar preview
-    local avatarPreview = Utility:Create("Frame", {
-        Size = UDim2.new(0, 300, 0, 350), Position = UDim2.new(0, 20, 0, 60),
-        BackgroundColor3 = CurrentTheme.Card, BackgroundTransparency = 0.1,
-        BorderSizePixel = 0, Parent = ac,
-    })
-    Utility:Create("UICorner", {CornerRadius = UDim.new(0, 16), Parent = avatarPreview})
-    Utility:Create("UIStroke", {Color = CurrentTheme.Border, Thickness = 1, Transparency = CurrentTheme.BorderTransparency, Parent = avatarPreview})
-
-    local avatarImg = Utility:Create("ImageLabel", {
-        Size = UDim2.new(0, 200, 0, 200), Position = UDim2.new(0.5, -100, 0, 40),
-        BackgroundTransparency = 1,
-        Image = "rbxthumb://type=Avatar&id=" .. LocalPlayer.UserId .. "&w=420&h=420",
-        Parent = avatarPreview,
-    })
-    Utility:Create("UICorner", {CornerRadius = UDim.new(0, 16), Parent = avatarImg})
-
-    Utility:Create("TextLabel", {
-        Size = UDim2.new(1, 0, 0, 24), Position = UDim2.new(0, 0, 0, 260),
-        BackgroundTransparency = 1, Text = "Avatar Preview",
-        TextColor3 = CurrentTheme.TextPrimary, TextSize = 16,
-        Font = Enum.Font.GothamBold, Parent = avatarPreview,
-    })
-
-    -- Outfit categories
-    local categories = {"Hats", "Hair", "Faces", "Shirts", "Pants", "Accessories", "Animations"}
-    local catX = 340
-    for _, cat in ipairs(categories) do
-        local catBtn = Utility:Create("TextButton", {
-            Size = UDim2.new(0, 120, 0, 40), Position = UDim2.new(0, catX, 0, 60),
-            BackgroundColor3 = CurrentTheme.Card, BackgroundTransparency = 0.1,
-            Text = cat, TextColor3 = CurrentTheme.TextSecondary,
-            TextSize = 13, Font = Enum.Font.GothamSemibold,
-            Parent = ac,
-        })
-        Utility:Create("UICorner", {CornerRadius = UDim.new(0, 10), Parent = catBtn})
-        catBtn.MouseEnter:Connect(function() Utility:Tween(catBtn, {BackgroundTransparency = 0}, 0.2) end)
-        catBtn.MouseLeave:Connect(function() Utility:Tween(catBtn, {BackgroundTransparency = 0.1}, 0.2) end)
-        catX = catX + 136
-    end
-end
-
--- ═══════════════════════════════════════════════════════════════
---  ANIMATION CENTER
--- ═══════════════════════════════════════════════════════════════
-function MeowlHub:BuildAnimationCenter()
-    self.Pages.AnimationCenter = Utility:Create("ScrollingFrame", {
-        Name = "AnimationCenter",
-        Size = UDim2.new(1, -240, 1, -60), Position = UDim2.new(0, 240, 0, 60),
-        BackgroundTransparency = 1, ScrollBarThickness = 4,
-        ScrollBarImageColor3 = Config.AccentColor,
-        CanvasSize = UDim2.new(0, 0, 0, 500),
-        Parent = self.Main, Visible = false,
-    })
-
-    local anc = self.Pages.AnimationCenter
-
-    Utility:Create("TextLabel", {
-        Size = UDim2.new(1, -40, 0, 30), Position = UDim2.new(0, 20, 0, 20),
-        BackgroundTransparency = 1, Text = "🏃 Animation Center",
-        TextColor3 = CurrentTheme.TextPrimary, TextSize = 20,
-        Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = anc,
-    })
-
-    local animations = {
-        {name = "Dance", icon = "💃"},
-        {name = "Wave", icon = "👋"},
-        {name = "Cheer", icon = "🎉"},
-        {name = "Laugh", icon = "😂"},
-        {name = "Sit", icon = "🪑"},
-        {name = "Salute", icon = "🫡"},
-        {name = "Point", icon = "👉"},
-        {name = "Sleep", icon = "😴"},
-        {name = "Idle", icon = "🧍"},
-        {name = "Run", icon = "🏃"},
-    }
-
-    for i, anim in ipairs(animations) do
-        local col = (i-1)%5
-        local row = math.floor((i-1)/5)
-        local ab = Utility:Create("TextButton", {
-            Size = UDim2.new(0, 170, 0, 120), Position = UDim2.new(0, 20 + col*186, 0, 70 + row*140),
-            BackgroundColor3 = CurrentTheme.Card, BackgroundTransparency = 0.1,
-            Text = "", Parent = anc,
-        })
-        Utility:Create("UICorner", {CornerRadius = UDim.new(0, 14), Parent = ab})
-        Utility:Create("UIStroke", {Color = CurrentTheme.Border, Thickness = 1, Transparency = CurrentTheme.BorderTransparency, Parent = ab})
-
-        Utility:Create("TextLabel", {
-            Size = UDim2.new(1, 0, 0, 50), Position = UDim2.new(0, 0, 0, 20),
-            BackgroundTransparency = 1, Text = anim.icon,
-            TextSize = 36, Parent = ab,
-        })
-
-        Utility:Create("TextLabel", {
-            Size = UDim2.new(1, 0, 0, 20), Position = UDim2.new(0, 0, 0, 75),
-            BackgroundTransparency = 1, Text = anim.name,
-            TextColor3 = CurrentTheme.TextPrimary, TextSize = 14,
-            Font = Enum.Font.GothamBold, Parent = ab,
-        })
-
-        ab.MouseEnter:Connect(function() Utility:Tween(ab, {BackgroundTransparency = 0}, 0.2) end)
-        ab.MouseLeave:Connect(function() Utility:Tween(ab, {BackgroundTransparency = 0.1}, 0.2) end)
-        ab.MouseButton1Click:Connect(function()
-            NotificationSystem:Show("Animation", anim.name .. " animation played!", "success")
-        end)
-    end
-end
-
--- ═══════════════════════════════════════════════════════════════
---  MUSIC CENTER
--- ═══════════════════════════════════════════════════════════════
-function MeowlHub:BuildMusicCenter()
-    self.Pages.MusicCenter = Utility:Create("ScrollingFrame", {
-        Name = "MusicCenter",
-        Size = UDim2.new(1, -240, 1, -60), Position = UDim2.new(0, 240, 0, 60),
-        BackgroundTransparency = 1, ScrollBarThickness = 4,
-        ScrollBarImageColor3 = Config.AccentColor,
-        CanvasSize = UDim2.new(0, 0, 0, 400),
-        Parent = self.Main, Visible = false,
-    })
-
-    local mc = self.Pages.MusicCenter
-
-    Utility:Create("TextLabel", {
-        Size = UDim2.new(1, -40, 0, 30), Position = UDim2.new(0, 20, 0, 20),
-        BackgroundTransparency = 1, Text = "🎵 Music Center",
-        TextColor3 = CurrentTheme.TextPrimary, TextSize = 20,
-        Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = mc,
-    })
-
-    -- Music player card
-    local playerCard = Utility:Create("Frame", {
-        Size = UDim2.new(0, 500, 0, 200), Position = UDim2.new(0, 20, 0, 60),
-        BackgroundColor3 = CurrentTheme.Card, BackgroundTransparency = 0.1,
-        BorderSizePixel = 0, Parent = mc,
-    })
-    Utility:Create("UICorner", {CornerRadius = UDim.new(0, 16), Parent = playerCard})
-    Utility:Create("UIStroke", {Color = CurrentTheme.Border, Thickness = 1, Transparency = CurrentTheme.BorderTransparency, Parent = playerCard})
-
-    -- Album art placeholder
-    local albumArt = Utility:Create("Frame", {
-        Size = UDim2.new(0, 140, 0, 140), Position = UDim2.new(0, 20, 0, 30),
-        BackgroundColor3 = Config.AccentColor, BackgroundTransparency = 0.7,
-        BorderSizePixel = 0, Parent = playerCard,
-    })
-    Utility:Create("UICorner", {CornerRadius = UDim.new(0, 12), Parent = albumArt})
-    Utility:Create("TextLabel", {Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, Text = "🎵", TextSize = 48, Parent = albumArt})
-
-    -- Song info
-    Utility:Create("TextLabel", {
-        Size = UDim2.new(0, 300, 0, 24), Position = UDim2.new(0, 180, 0, 40),
-        BackgroundTransparency = 1, Text = "Now Playing",
-        TextColor3 = CurrentTheme.TextMuted, TextSize = 12,
-        Font = Enum.Font.Gotham, TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = playerCard,
-    })
-
-    Utility:Create("TextLabel", {
-        Size = UDim2.new(0, 300, 0, 28), Position = UDim2.new(0, 180, 0, 62),
-        BackgroundTransparency = 1, Text = "No song playing",
-        TextColor3 = CurrentTheme.TextPrimary, TextSize = 18,
-        Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = playerCard,
-    })
-
-    -- Controls
-    local controls = {"⏮️", "⏯️", "⏭️", "🔀", "🔁"}
-    local ctrlX = 180
-    for _, ctrl in ipairs(controls) do
-        local cb = Utility:Create("TextButton", {
-            Size = UDim2.new(0, 40, 0, 40), Position = UDim2.new(0, ctrlX, 0, 110),
-            BackgroundColor3 = CurrentTheme.BackgroundSecondary, BackgroundTransparency = 0.5,
-            Text = ctrl, TextSize = 18, Parent = playerCard,
-        })
-        Utility:Create("UICorner", {CornerRadius = UDim.new(0, 10), Parent = cb})
-        ctrlX = ctrlX + 52
-    end
-
-    -- Volume slider
-    local volumeBar = Utility:Create("Frame", {
-        Size = UDim2.new(0, 200, 0, 6), Position = UDim2.new(0, 180, 0, 165),
-        BackgroundColor3 = CurrentTheme.BackgroundSecondary, BorderSizePixel = 0,
-        Parent = playerCard,
-    })
-    Utility:Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = volumeBar})
-
-    local volumeFill = Utility:Create("Frame", {
-        Size = UDim2.new(0.7, 0, 1, 0), BackgroundColor3 = Config.AccentColor,
-        BorderSizePixel = 0, Parent = volumeBar,
-    })
-    Utility:Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = volumeFill})
-end
-
--- ═══════════════════════════════════════════════════════════════
---  AI CENTER
--- ═══════════════════════════════════════════════════════════════
-function MeowlHub:BuildAICenter()
-    self.Pages.AICenter = Utility:Create("ScrollingFrame", {
-        Name = "AICenter",
-        Size = UDim2.new(1, -240, 1, -60), Position = UDim2.new(0, 240, 0, 60),
-        BackgroundTransparency = 1, ScrollBarThickness = 4,
-        ScrollBarImageColor3 = Config.AccentColor,
-        CanvasSize = UDim2.new(0, 0, 0, 500),
-        Parent = self.Main, Visible = false,
-    })
-
-    local aic = self.Pages.AICenter
-
-    Utility:Create("TextLabel", {
-        Size = UDim2.new(1, -40, 0, 30), Position = UDim2.new(0, 20, 0, 20),
-        BackgroundTransparency = 1, Text = "🤖 AI Center",
-        TextColor3 = CurrentTheme.TextPrimary, TextSize = 20,
-        Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = aic,
-    })
-
-    -- Chat interface
-    local chatFrame = Utility:Create("Frame", {
-        Size = UDim2.new(0, 800, 0, 400), Position = UDim2.new(0, 20, 0, 60),
-        BackgroundColor3 = CurrentTheme.Card, BackgroundTransparency = 0.1,
-        BorderSizePixel = 0, Parent = aic,
-    })
-    Utility:Create("UICorner", {CornerRadius = UDim.new(0, 16), Parent = chatFrame})
-    Utility:Create("UIStroke", {Color = CurrentTheme.Border, Thickness = 1, Transparency = CurrentTheme.BorderTransparency, Parent = chatFrame})
-
-    -- Chat messages area
-    local messagesArea = Utility:Create("ScrollingFrame", {
-        Size = UDim2.new(1, -20, 1, -70), Position = UDim2.new(0, 10, 0, 10),
-        BackgroundTransparency = 1, ScrollBarThickness = 3,
-        ScrollBarImageColor3 = Config.AccentColor,
-        CanvasSize = UDim2.new(0, 0, 0, 200),
-        Parent = chatFrame,
-    })
-
-    -- AI welcome message
-    local aiMsg = Utility:Create("Frame", {
-        Size = UDim2.new(0, 400, 0, 60), Position = UDim2.new(0, 10, 0, 10),
-        BackgroundColor3 = Config.AccentColor, BackgroundTransparency = 0.85,
-        BorderSizePixel = 0, Parent = messagesArea,
-    })
-    Utility:Create("UICorner", {CornerRadius = UDim.new(0, 12), Parent = aiMsg})
-
-    Utility:Create("TextLabel", {
-        Size = UDim2.new(1, -20, 1, -10), Position = UDim2.new(0, 10, 0, 5),
-        BackgroundTransparency = 1, Text = "Hello! I am Meowl AI. How can I help you today?",
-        TextColor3 = CurrentTheme.TextPrimary, TextSize = 13,
-        Font = Enum.Font.Gotham, TextWrapped = true, TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = aiMsg,
-    })
-
-    -- Input box
-    local inputBox = Utility:Create("Frame", {
-        Size = UDim2.new(1, -20, 0, 40), Position = UDim2.new(0, 10, 1, -50),
-        BackgroundColor3 = CurrentTheme.BackgroundSecondary, BackgroundTransparency = 0.5,
-        BorderSizePixel = 0, Parent = chatFrame,
-    })
-    Utility:Create("UICorner", {CornerRadius = UDim.new(0, 10), Parent = inputBox})
-
-    local input = Utility:Create("TextBox", {
-        Size = UDim2.new(1, -60, 1, 0), Position = UDim2.new(0, 14, 0, 0),
-        BackgroundTransparency = 1, Text = "", PlaceholderText = "Ask Meowl AI anything...",
-        TextColor3 = CurrentTheme.TextPrimary, PlaceholderColor3 = CurrentTheme.TextMuted,
-        TextSize = 13, Font = Enum.Font.Gotham, TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = inputBox,
-    })
-
-    local sendBtn = Utility:Create("TextButton", {
-        Size = UDim2.new(0, 36, 0, 36), Position = UDim2.new(1, -46, 0, 2),
-        BackgroundColor3 = Config.AccentColor, BackgroundTransparency = 0.3,
-        Text = "📤", TextSize = 16, Parent = inputBox,
-    })
-    Utility:Create("UICorner", {CornerRadius = UDim.new(0, 8), Parent = sendBtn})
-end
-
--- ═══════════════════════════════════════════════════════════════
---  CLOUD CENTER
--- ═══════════════════════════════════════════════════════════════
-function MeowlHub:BuildCloudCenter()
-    self.Pages.CloudCenter = Utility:Create("ScrollingFrame", {
-        Name = "CloudCenter",
-        Size = UDim2.new(1, -240, 1, -60), Position = UDim2.new(0, 240, 0, 60),
-        BackgroundTransparency = 1, ScrollBarThickness = 4,
-        ScrollBarImageColor3 = Config.AccentColor,
-        CanvasSize = UDim2.new(0, 0, 0, 400),
-        Parent = self.Main, Visible = false,
-    })
-
-    local cc = self.Pages.CloudCenter
-
-    Utility:Create("TextLabel", {
-        Size = UDim2.new(1, -40, 0, 30), Position = UDim2.new(0, 20, 0, 20),
-        BackgroundTransparency = 1, Text = "☁️ Cloud Center",
-        TextColor3 = CurrentTheme.TextPrimary, TextSize = 20,
-        Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = cc,
-    })
-
-    -- Cloud stats
-    local cloudStats = {
-        {label = "Total Scripts", value = "156", icon = "📜"},
-        {label = "Storage Used", value = "2.4GB", icon = "💾"},
-        {label = "Sync Status", value = "Synced", icon = "✅"},
-        {label = "Backups", value = "12", icon = "💿"},
-    }
-
-    for i, stat in ipairs(cloudStats) do
-        local sf = Utility:Create("Frame", {
-            Size = UDim2.new(0, 200, 0, 100), Position = UDim2.new(0, 20 + (i-1)*220, 0, 60),
-            BackgroundColor3 = CurrentTheme.Card, BackgroundTransparency = 0.1,
-            BorderSizePixel = 0, Parent = cc,
-        })
-        Utility:Create("UICorner", {CornerRadius = UDim.new(0, 14), Parent = sf})
-        Utility:Create("UIStroke", {Color = CurrentTheme.Border, Thickness = 1, Transparency = CurrentTheme.BorderTransparency, Parent = sf})
-
-        Utility:Create("TextLabel", {Size = UDim2.new(0, 40, 0, 40), Position = UDim2.new(0, 14, 0, 14), BackgroundTransparency = 1, Text = stat.icon, TextSize = 24, Parent = sf})
-        Utility:Create("TextLabel", {Size = UDim2.new(1, -20, 0, 20), Position = UDim2.new(0, 14, 0, 58), BackgroundTransparency = 1, Text = stat.label, TextColor3 = CurrentTheme.TextMuted, TextSize = 11, Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left, Parent = sf})
-        Utility:Create("TextLabel", {Size = UDim2.new(1, -20, 0, 24), Position = UDim2.new(0, 14, 0, 76), BackgroundTransparency = 1, Text = stat.value, TextColor3 = CurrentTheme.TextPrimary, TextSize = 18, Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left, Parent = sf})
-    end
-
-    -- Cloud browser
-    local browser = Utility:Create("Frame", {
-        Size = UDim2.new(0, 860, 0, 250), Position = UDim2.new(0, 20, 0, 180),
-        BackgroundColor3 = CurrentTheme.Card, BackgroundTransparency = 0.1,
-        BorderSizePixel = 0, Parent = cc,
-    })
-    Utility:Create("UICorner", {CornerRadius = UDim.new(0, 14), Parent = browser})
-    Utility:Create("UIStroke", {Color = CurrentTheme.Border, Thickness = 1, Transparency = CurrentTheme.BorderTransparency, Parent = browser})
-
-    Utility:Create("TextLabel", {
-        Size = UDim2.new(1, -20, 0, 20), Position = UDim2.new(0, 14, 0, 14),
-        BackgroundTransparency = 1, Text = "CLOUD SCRIPTS",
-        TextColor3 = CurrentTheme.TextMuted, TextSize = 10,
-        Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = browser,
-    })
-end
-
--- ═══════════════════════════════════════════════════════════════
---  PREMIUM PAGE
--- ═══════════════════════════════════════════════════════════════
-function MeowlHub:BuildPremiumPage()
-    self.Pages.Premium = Utility:Create("ScrollingFrame", {
-        Name = "Premium",
-        Size = UDim2.new(1, -240, 1, -60), Position = UDim2.new(0, 240, 0, 60),
-        BackgroundTransparency = 1, ScrollBarThickness = 4,
-        ScrollBarImageColor3 = Config.AccentColor,
-        CanvasSize = UDim2.new(0, 0, 0, 500),
-        Parent = self.Main, Visible = false,
-    })
-
-    local pp = self.Pages.Premium
-
-    -- Premium banner
-    local premBanner = Utility:Create("Frame", {
-        Size = UDim2.new(0, 860, 0, 150), Position = UDim2.new(0, 20, 0, 20),
-        BackgroundColor3 = Color3.fromRGB(251, 191, 36), BackgroundTransparency = 0.85,
-        BorderSizePixel = 0, Parent = pp,
-    })
-    Utility:Create("UICorner", {CornerRadius = UDim.new(0, 16), Parent = premBanner})
-    Utility:Create("UIStroke", {Color = Color3.fromRGB(251, 191, 36), Thickness = 1, Transparency = 0.5, Parent = premBanner})
-
-    Utility:Create("TextLabel", {
-        Size = UDim2.new(1, -40, 0, 40), Position = UDim2.new(0, 20, 0, 30),
-        BackgroundTransparency = 1, Text = "👑 PREMIUM MEMBER",
-        TextColor3 = Color3.fromRGB(251, 191, 36), TextSize = 28,
-        Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = premBanner,
-    })
-
-    Utility:Create("TextLabel", {
-        Size = UDim2.new(1, -40, 0, 20), Position = UDim2.new(0, 20, 0, 72),
-        BackgroundTransparency = 1, Text = "You have access to all premium features!",
-        TextColor3 = CurrentTheme.TextSecondary, TextSize = 14,
-        Font = Enum.Font.Gotham, TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = premBanner,
-    })
-
-    -- Premium features grid
-    local features = {
-        {name = "Premium Themes", icon = "🎨", desc = "Exclusive dark & RGB themes"},
-        {name = "Premium Particles", icon = "✨", desc = "Custom particle effects"},
-        {name = "Premium Icons", icon = "🔮", desc = "Animated custom icons"},
-        {name = "Cloud Sync", icon = "☁️", desc = "Unlimited cloud storage"},
-        {name = "Priority Support", icon = "🚀", desc = "24/7 priority support"},
-        {name = "Early Access", icon = "🔓", desc = "Beta features & early updates"},
-    }
-
-    for i, feature in ipairs(features) do
-        local col = (i-1)%3
-        local row = math.floor((i-1)/3)
-        local fc = Utility:Create("Frame", {
-            Size = UDim2.new(0, 270, 0, 120), Position = UDim2.new(0, 20 + col*290, 0, 190 + row*140),
-            BackgroundColor3 = CurrentTheme.Card, BackgroundTransparency = 0.1,
-            BorderSizePixel = 0, Parent = pp,
-        })
-        Utility:Create("UICorner", {CornerRadius = UDim.new(0, 14), Parent = fc})
-        Utility:Create("UIStroke", {Color = Color3.fromRGB(251, 191, 36), Thickness = 1, Transparency = 0.7, Parent = fc})
-
-        Utility:Create("TextLabel", {Size = UDim2.new(0, 40, 0, 40), Position = UDim2.new(0, 14, 0, 14), BackgroundTransparency = 1, Text = feature.icon, TextSize = 28, Parent = fc})
-        Utility:Create("TextLabel", {Size = UDim2.new(1, -20, 0, 20), Position = UDim2.new(0, 14, 0, 58), BackgroundTransparency = 1, Text = feature.name, TextColor3 = CurrentTheme.TextPrimary, TextSize = 14, Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left, Parent = fc})
-        Utility:Create("TextLabel", {Size = UDim2.new(1, -20, 0, 16), Position = UDim2.new(0, 14, 0, 80), BackgroundTransparency = 1, Text = feature.desc, TextColor3 = CurrentTheme.TextMuted, TextSize = 11, Font = Enum.Font.Gotham, TextXAlignment = Enum.TextXAlignment.Left, Parent = fc})
-    end
-end
-
--- ═══════════════════════════════════════════════════════════════
---  SETTINGS PAGE
--- ═══════════════════════════════════════════════════════════════
-function MeowlHub:BuildSettingsPage()
-    self.Pages.Settings = Utility:Create("ScrollingFrame", {
-        Name = "Settings",
-        Size = UDim2.new(1, -240, 1, -60), Position = UDim2.new(0, 240, 0, 60),
-        BackgroundTransparency = 1, ScrollBarThickness = 4,
-        ScrollBarImageColor3 = Config.AccentColor,
-        CanvasSize = UDim2.new(0, 0, 0, 600),
-        Parent = self.Main, Visible = false,
-    })
-
-    local sp = self.Pages.Settings
-
-    Utility:Create("TextLabel", {
-        Size = UDim2.new(1, -40, 0, 30), Position = UDim2.new(0, 20, 0, 20),
-        BackgroundTransparency = 1, Text = "⚙️ Settings",
-        TextColor3 = CurrentTheme.TextPrimary, TextSize = 20,
-        Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = sp,
-    })
-
-    local settings = {
-        {name = "Theme", value = Config.Theme, type = "dropdown"},
-        {name = "RGB Mode", value = Config.RGBMode and "ON" or "OFF", type = "toggle"},
-        {name = "Blur Effects", value = Config.BlurEnabled and "ON" or "OFF", type = "toggle"},
-        {name = "Sound Effects", value = Config.SoundEnabled and "ON" or "OFF", type = "toggle"},
-        {name = "Notifications", value = Config.NotificationsEnabled and "ON" or "OFF", type = "toggle"},
-        {name = "Auto Save", value = Config.AutoSave and "ON" or "OFF", type = "toggle"},
-        {name = "UI Scale", value = tostring(Config.UIScale), type = "slider"},
-        {name = "Animation Speed", value = tostring(Config.AnimationSpeed) .. "s", type = "slider"},
-    }
-
-    for i, setting in ipairs(settings) do
-        local sf = Utility:Create("Frame", {
-            Size = UDim2.new(0, 800, 0, 50), Position = UDim2.new(0, 20, 0, 60 + (i-1)*62),
-            BackgroundColor3 = CurrentTheme.Card, BackgroundTransparency = 0.1,
-            BorderSizePixel = 0, Parent = sp,
-        })
-        Utility:Create("UICorner", {CornerRadius = UDim.new(0, 12), Parent = sf})
-        Utility:Create("UIStroke", {Color = CurrentTheme.Border, Thickness = 1, Transparency = CurrentTheme.BorderTransparency, Parent = sf})
-
-        Utility:Create("TextLabel", {
-            Size = UDim2.new(0, 200, 0, 50), Position = UDim2.new(0, 16, 0, 0),
-            BackgroundTransparency = 1, Text = setting.name,
-            TextColor3 = CurrentTheme.TextPrimary, TextSize = 14,
-            Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left,
-            Parent = sf,
-        })
-
-        if setting.type == "toggle" then
-            local toggle = Utility:Create("TextButton", {
-                Size = UDim2.new(0, 60, 0, 30), Position = UDim2.new(1, -80, 0, 10),
-                BackgroundColor3 = setting.value == "ON" and Config.AccentColor or CurrentTheme.TextMuted,
-                BackgroundTransparency = 0.3,
-                Text = setting.value, TextColor3 = Color3.fromRGB(255, 255, 255),
-                TextSize = 11, Font = Enum.Font.GothamBold,
-                Parent = sf,
-            })
-            Utility:Create("UICorner", {CornerRadius = UDim.new(0, 15), Parent = toggle})
+    for _, btn in pairs(TabButtons) do
+        if btn.Id == tabId then
+            Tween(btn.Button, {BackgroundColor3 = CONFIG.AccentColor}, 0.2)
+            btn.Button.TextColor3 = CONFIG.TextColor
         else
-            Utility:Create("TextLabel", {
-                Size = UDim2.new(0, 150, 0, 50), Position = UDim2.new(1, -170, 0, 0),
-                BackgroundTransparency = 1, Text = setting.value,
-                TextColor3 = Config.AccentColor, TextSize = 13,
-                Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Right,
-                Parent = sf,
-            })
+            Tween(btn.Button, {BackgroundColor3 = Color3.fromRGB(28, 28, 35)}, 0.2)
+            btn.Button.TextColor3 = CONFIG.SubTextColor
         end
     end
 end
 
--- ═══════════════════════════════════════════════════════════════
---  FLOATING CAT BUTTON
--- ═══════════════════════════════════════════════════════════════
-function MeowlHub:BuildFloatingCat()
-    self.FloatingCat = Utility:Create("TextButton", {
-        Name = "FloatingCat",
-        Size = UDim2.new(0, 56, 0, 56),
-        Position = UDim2.new(1, -80, 1, -80),
-        BackgroundColor3 = Config.AccentColor,
-        BackgroundTransparency = 0.2,
-        Text = "🐱",
-        TextSize = 28,
-        Parent = self.Gui,
+for i, tab in ipairs(Tabs) do
+    local btn = Create("TextButton", {
+        Name = tab.id .. "Btn",
+        Parent = Sidebar,
+        Size = UDim2.new(1, -16, 0, 42),
+        Position = UDim2.new(0, 8, 0, 15 + (i - 1) * 50),
+        BackgroundColor3 = (i == 1) and CONFIG.AccentColor or Color3.fromRGB(28, 28, 35),
+        BorderSizePixel = 0,
+        Text = tab.name,
+        TextColor3 = (i == 1) and CONFIG.TextColor or CONFIG.SubTextColor,
+        TextSize = 14,
+        Font = CONFIG.FontBold,
+        AutoButtonColor = false,
+    })
+
+    AddUICorner(btn, 8)
+    table.insert(TabButtons, {Button = btn, Id = tab.id})
+
+    btn.MouseButton1Click:Connect(function()
+        SwitchTab(tab.id)
+    end)
+
+    btn.MouseEnter:Connect(function()
+        if CurrentTab ~= tab.id then
+            Tween(btn, {BackgroundColor3 = Color3.fromRGB(40, 40, 50)}, 0.2)
+        end
+    end)
+
+    btn.MouseLeave:Connect(function()
+        if CurrentTab ~= tab.id then
+            Tween(btn, {BackgroundColor3 = Color3.fromRGB(28, 28, 35)}, 0.2)
+        end
+    end)
+end
+
+-- CONTENT FRAME
+local ContentFrame = Create("Frame", {
+    Name = "ContentFrame",
+    Parent = MainFrame,
+    Size = UDim2.new(1, -160, 1, -50),
+    Position = UDim2.new(0, 160, 0, 50),
+    BackgroundTransparency = 1,
+})
+
+-- HOME TAB
+local HomeTab = Create("Frame", {
+    Name = "HomeTab",
+    Parent = ContentFrame,
+    Size = UDim2.new(1, 0, 1, 0),
+    BackgroundTransparency = 1,
+    Visible = true,
+})
+
+TabContents["Home"] = HomeTab
+
+local HomeTitle = Create("TextLabel", {
+    Name = "Title",
+    Parent = HomeTab,
+    Size = UDim2.new(1, -20, 0, 30),
+    Position = UDim2.new(0, 15, 0, 12),
+    BackgroundTransparency = 1,
+    Text = "Saved Scripts",
+    TextColor3 = CONFIG.TextColor,
+    TextSize = 20,
+    Font = CONFIG.FontBold,
+    TextXAlignment = Enum.TextXAlignment.Left,
+})
+
+local HomeDesc = Create("TextLabel", {
+    Name = "Desc",
+    Parent = HomeTab,
+    Size = UDim2.new(1, -20, 0, 20),
+    Position = UDim2.new(0, 15, 0, 42),
+    BackgroundTransparency = 1,
+    Text = "Manage your saved scripts - Execute, Copy, or Delete",
+    TextColor3 = CONFIG.SubTextColor,
+    TextSize = 13,
+    Font = CONFIG.Font,
+    TextXAlignment = Enum.TextXAlignment.Left,
+})
+
+local SavedScroll = Create("ScrollingFrame", {
+    Name = "SavedScroll",
+    Parent = HomeTab,
+    Size = UDim2.new(1, -20, 1, -110),
+    Position = UDim2.new(0, 10, 0, 70),
+    BackgroundColor3 = Color3.fromRGB(22, 22, 28),
+    BorderSizePixel = 0,
+    ScrollBarThickness = 6,
+    ScrollBarImageColor3 = Color3.fromRGB(80, 80, 90),
+    CanvasSize = UDim2.new(0, 0, 0, 0),
+    AutomaticCanvasSize = Enum.AutomaticSize.Y,
+})
+
+AddUICorner(SavedScroll, 10)
+
+Create("UIPadding", {
+    Parent = SavedScroll,
+    PaddingLeft = UDim.new(0, 10),
+    PaddingRight = UDim.new(0, 10),
+    PaddingTop = UDim.new(0, 10),
+    PaddingBottom = UDim.new(0, 10),
+})
+
+Create("UIListLayout", {
+    Parent = SavedScroll,
+    Padding = UDim.new(0, 10),
+    SortOrder = Enum.SortOrder.LayoutOrder,
+})
+
+local function RefreshSavedScripts()
+    for _, child in pairs(SavedScroll:GetChildren()) do
+        if child:IsA("Frame") then child:Destroy() end
+    end
+
+    if #SavedScripts == 0 then
+        local empty = Create("TextLabel", {
+            Parent = SavedScroll,
+            Size = UDim2.new(1, -20, 0, 100),
+            BackgroundTransparency = 1,
+            Text = "No saved scripts yet. Save scripts from the Executor tab.",
+            TextColor3 = CONFIG.SubTextColor,
+            TextSize = 14,
+            Font = CONFIG.Font,
+            TextXAlignment = Enum.TextXAlignment.Center,
+            TextYAlignment = Enum.TextYAlignment.Center,
+        })
+        return
+    end
+
+    for i, scriptData in ipairs(SavedScripts) do
+        local card = Create("Frame", {
+            Name = "Script_" .. i,
+            Parent = SavedScroll,
+            Size = UDim2.new(1, -10, 0, 70),
+            BackgroundColor3 = CONFIG.SecondaryColor,
+            BorderSizePixel = 0,
+        })
+
+        AddUICorner(card, 8)
+        Create("UIStroke", {Color = Color3.fromRGB(60, 60, 70), Thickness = 1, Parent = card})
+
+        local nameLabel = Create("TextLabel", {
+            Parent = card,
+            Size = UDim2.new(1, -200, 0, 25),
+            Position = UDim2.new(0, 12, 0, 8),
+            BackgroundTransparency = 1,
+            Text = scriptData.name,
+            TextColor3 = CONFIG.TextColor,
+            TextSize = 15,
+            Font = CONFIG.FontBold,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            TextTruncate = Enum.TextTruncate.AtEnd,
+        })
+
+        local preview = Create("TextLabel", {
+            Parent = card,
+            Size = UDim2.new(1, -200, 0, 20),
+            Position = UDim2.new(0, 12, 0, 35),
+            BackgroundTransparency = 1,
+            Text = scriptData.code:sub(1, 50) .. (scriptData.code:len() > 50 and "..." or ""),
+            TextColor3 = CONFIG.SubTextColor,
+            TextSize = 11,
+            Font = CONFIG.FontMono,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            TextTruncate = Enum.TextTruncate.AtEnd,
+        })
+
+        local execBtn = Create("TextButton", {
+            Parent = card,
+            Size = UDim2.new(0, 70, 0, 32),
+            Position = UDim2.new(1, -235, 0.5, -16),
+            BackgroundColor3 = CONFIG.SuccessColor,
+            BorderSizePixel = 0,
+            Text = "Run",
+            TextColor3 = CONFIG.TextColor,
+            TextSize = 12,
+            Font = CONFIG.FontBold,
+            AutoButtonColor = false,
+        })
+        AddUICorner(execBtn, 6)
+
+        execBtn.MouseButton1Click:Connect(function()
+            local func, err = loadstring(scriptData.code)
+            if func then
+                local env = setmetatable({
+                    print = function(...) 
+                        local args = {...}
+                        local str = ""
+                        for i, v in ipairs(args) do str = str .. tostring(v) .. " " end
+                        print("[Home] " .. str)
+                    end,
+                    game = game, workspace = workspace, Players = Players,
+                }, {__index = _G})
+                setfenv(func, env)
+                pcall(func)
+            end
+        end)
+
+        local copyBtn = Create("TextButton", {
+            Parent = card,
+            Size = UDim2.new(0, 70, 0, 32),
+            Position = UDim2.new(1, -155, 0.5, -16),
+            BackgroundColor3 = Color3.fromRGB(60, 60, 75),
+            BorderSizePixel = 0,
+            Text = "Copy",
+            TextColor3 = CONFIG.TextColor,
+            TextSize = 12,
+            Font = CONFIG.FontBold,
+            AutoButtonColor = false,
+        })
+        AddUICorner(copyBtn, 6)
+
+        copyBtn.MouseButton1Click:Connect(function()
+            if ExecutorCodeInput then
+                ExecutorCodeInput.Text = scriptData.code
+                SwitchTab("Executor")
+            end
+        end)
+
+        local delBtn = Create("TextButton", {
+            Parent = card,
+            Size = UDim2.new(0, 70, 0, 32),
+            Position = UDim2.new(1, -75, 0.5, -16),
+            BackgroundColor3 = CONFIG.ErrorColor,
+            BorderSizePixel = 0,
+            Text = "Del",
+            TextColor3 = CONFIG.TextColor,
+            TextSize = 12,
+            Font = CONFIG.FontBold,
+            AutoButtonColor = false,
+        })
+        AddUICorner(delBtn, 6)
+
+        delBtn.MouseButton1Click:Connect(function()
+            table.remove(SavedScripts, i)
+            RefreshSavedScripts()
+        end)
+    end
+end
+
+local AddScriptBtn = Create("TextButton", {
+    Name = "AddScriptBtn",
+    Parent = HomeTab,
+    Size = UDim2.new(1, -20, 0, 40),
+    Position = UDim2.new(0, 10, 1, -50),
+    BackgroundColor3 = CONFIG.AccentColor,
+    BorderSizePixel = 0,
+    Text = "+ Add New Script",
+    TextColor3 = CONFIG.TextColor,
+    TextSize = 15,
+    Font = CONFIG.FontBold,
+    AutoButtonColor = false,
+})
+
+AddUICorner(AddScriptBtn, 10)
+
+AddScriptBtn.MouseButton1Click:Connect(function()
+    local popup = Create("Frame", {
+        Name = "AddPopup",
+        Parent = ScreenGui,
+        Size = UDim2.new(0, 400, 0, 300),
+        Position = UDim2.new(0.5, -200, 0.5, -150),
+        BackgroundColor3 = CONFIG.PrimaryColor,
+        BorderSizePixel = 0,
         ZIndex = 100,
     })
-    Utility:Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = self.FloatingCat})
 
-    -- Glow effect
-    local glow = Utility:Create("UIStroke", {
-        Color = Config.AccentColor, Thickness = 3, Transparency = 0.5,
-        Parent = self.FloatingCat,
+    AddUICorner(popup, 12)
+    Create("UIStroke", {Color = Color3.fromRGB(80, 80, 95), Thickness = 2, Parent = popup})
+    AddShadow(popup)
+
+    local popupTitle = Create("TextLabel", {
+        Parent = popup,
+        Size = UDim2.new(1, -20, 0, 30),
+        Position = UDim2.new(0, 10, 0, 12),
+        BackgroundTransparency = 1,
+        Text = "Add New Script",
+        TextColor3 = CONFIG.TextColor,
+        TextSize = 18,
+        Font = CONFIG.FontBold,
+        TextXAlignment = Enum.TextXAlignment.Left,
     })
 
-    -- Bounce animation
-    task.spawn(function()
-        while self.FloatingCat.Parent do
-            Utility:Tween(self.FloatingCat, {Position = UDim2.new(1, -80, 1, -88)}, 1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
-            task.wait(1)
-            if self.FloatingCat.Parent then
-                Utility:Tween(self.FloatingCat, {Position = UDim2.new(1, -80, 1, -80)}, 1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
-            end
-            task.wait(1)
-        end
-    end)
-
-    -- Glow pulse
-    task.spawn(function()
-        while glow.Parent do
-            Utility:Tween(glow, {Transparency = 0.2}, 1.5)
-            task.wait(1.5)
-            if glow.Parent then Utility:Tween(glow, {Transparency = 0.6}, 1.5) end
-            task.wait(1.5)
-        end
-    end)
-
-    self.FloatingCat.MouseButton1Click:Connect(function()
-        Utility:PlaySound("rbxassetid://9113083740", 0.3)
-        NotificationSystem:Show("Meowl", "Meowl says hello! 🐱", "info")
-    end)
-end
-
--- ═══════════════════════════════════════════════════════════════
---  LOADING SCREEN
--- ═══════════════════════════════════════════════════════════════
-function MeowlHub:BuildLoadingScreen()
-    self.LoadingScreen = Utility:Create("Frame", {
-        Name = "LoadingScreen",
-        Size = UDim2.new(1, 0, 1, 0),
-        BackgroundColor3 = CurrentTheme.Background,
+    local nameInput = Create("TextBox", {
+        Parent = popup,
+        Size = UDim2.new(1, -20, 0, 40),
+        Position = UDim2.new(0, 10, 0, 50),
+        BackgroundColor3 = CONFIG.SecondaryColor,
         BorderSizePixel = 0,
-        Parent = self.Main,
-        ZIndex = 1000,
+        PlaceholderText = "Script Name...",
+        TextColor3 = CONFIG.TextColor,
+        PlaceholderColor3 = Color3.fromRGB(100, 100, 110),
+        TextSize = 14,
+        Font = CONFIG.Font,
     })
+    AddUICorner(nameInput, 8)
 
-    local logo = Utility:Create("TextLabel", {
-        Size = UDim2.new(0, 100, 0, 100), Position = UDim2.new(0.5, -50, 0.4, -50),
-        BackgroundTransparency = 1, Text = "🐱",
-        TextSize = 64, Parent = self.LoadingScreen,
+    local codeInput = Create("TextBox", {
+        Parent = popup,
+        Size = UDim2.new(1, -20, 0, 120),
+        Position = UDim2.new(0, 10, 0, 100),
+        BackgroundColor3 = CONFIG.SecondaryColor,
+        BorderSizePixel = 0,
+        PlaceholderText = "Paste Lua code here...",
+        TextColor3 = CONFIG.TextColor,
+        PlaceholderColor3 = Color3.fromRGB(100, 100, 110),
+        TextSize = 12,
+        Font = CONFIG.FontMono,
+        MultiLine = true,
+        TextWrapped = true,
+        ClearTextOnFocus = false,
     })
+    AddUICorner(codeInput, 8)
 
-    local title = Utility:Create("TextLabel", {
-        Size = UDim2.new(0, 400, 0, 40), Position = UDim2.new(0.5, -200, 0.4, 60),
-        BackgroundTransparency = 1, Text = "Meowl Hub V10",
-        TextColor3 = Config.AccentColor, TextSize = 28,
-        Font = Enum.Font.GothamBold, Parent = self.LoadingScreen,
+    local saveBtn = Create("TextButton", {
+        Parent = popup,
+        Size = UDim2.new(0, 120, 0, 36),
+        Position = UDim2.new(0.5, -125, 1, -50),
+        BackgroundColor3 = CONFIG.SuccessColor,
+        BorderSizePixel = 0,
+        Text = "Save",
+        TextColor3 = CONFIG.TextColor,
+        TextSize = 14,
+        Font = CONFIG.FontBold,
+        AutoButtonColor = false,
     })
+    AddUICorner(saveBtn, 8)
 
-    local subtitle = Utility:Create("TextLabel", {
-        Size = UDim2.new(0, 400, 0, 20), Position = UDim2.new(0.5, -200, 0.4, 100),
-        BackgroundTransparency = 1, Text = "Ultimate Edition - Loading Universe...",
-        TextColor3 = CurrentTheme.TextMuted, TextSize = 14,
-        Font = Enum.Font.Gotham, Parent = self.LoadingScreen,
+    local cancelBtn = Create("TextButton", {
+        Parent = popup,
+        Size = UDim2.new(0, 120, 0, 36),
+        Position = UDim2.new(0.5, 5, 1, -50),
+        BackgroundColor3 = Color3.fromRGB(60, 60, 70),
+        BorderSizePixel = 0,
+        Text = "Cancel",
+        TextColor3 = CONFIG.TextColor,
+        TextSize = 14,
+        Font = CONFIG.FontBold,
+        AutoButtonColor = false,
     })
+    AddUICorner(cancelBtn, 8)
 
-    -- Loading bar
-    local barBg = Utility:Create("Frame", {
-        Size = UDim2.new(0, 300, 0, 4), Position = UDim2.new(0.5, -150, 0.4, 140),
-        BackgroundColor3 = CurrentTheme.BackgroundSecondary, BorderSizePixel = 0,
-        Parent = self.LoadingScreen,
-    })
-    Utility:Create("UICorner", {CornerRadius = UDim.new(0, 2), Parent = barBg})
-
-    self.LoadingBar = Utility:Create("Frame", {
-        Size = UDim2.new(0, 0, 1, 0),
-        BackgroundColor3 = Config.AccentColor, BorderSizePixel = 0,
-        Parent = barBg,
-    })
-    Utility:Create("UICorner", {CornerRadius = UDim.new(0, 2), Parent = self.LoadingBar})
-end
-
-function MeowlHub:ShowLoadingScreen()
-    -- Animate loading bar
-    Utility:Tween(self.LoadingBar, {Size = UDim2.new(0.7, 0, 1, 0)}, 1.5)
-    task.wait(1.5)
-    Utility:Tween(self.LoadingBar, {Size = UDim2.new(1, 0, 1, 0)}, 1)
-    task.wait(1)
-
-    -- Fade out loading screen
-    Utility:Tween(self.LoadingScreen, {BackgroundTransparency = 1}, 0.8, Enum.EasingStyle.Quart, Enum.EasingDirection.Out, function()
-        self.LoadingScreen.Visible = false
-    end)
-
-    -- Fade in main UI
-    Utility:Tween(self.Main, {BackgroundTransparency = 0.05}, 0.5)
-end
-
--- ═══════════════════════════════════════════════════════════════
---  CORE SYSTEMS
--- ═══════════════════════════════════════════════════════════════
-
--- Page Switching
-function MeowlHub:SwitchPage(pageName)
-    if not self.Pages[pageName] then return end
-
-    -- Hide current page
-    if self.Pages[self.CurrentPage] then
-        self.Pages[self.CurrentPage].Visible = false
-    end
-
-    -- Update nav button states
-    for name, navData in pairs(self.NavButtons) do
-        if name == pageName then
-            Utility:Tween(navData.button, {BackgroundTransparency = 0.85}, 0.2)
-            Utility:Tween(navData.text, {TextColor3 = Config.AccentColor}, 0.2)
-        else
-            Utility:Tween(navData.button, {BackgroundTransparency = 1}, 0.2)
-            Utility:Tween(navData.text, {TextColor3 = CurrentTheme.TextSecondary}, 0.2)
-        end
-    end
-
-    -- Show new page
-    self.CurrentPage = pageName
-    self.Pages[pageName].Visible = true
-
-    -- Update breadcrumb
-    local pageNames = {
-        Dashboard = "Dashboard",
-        Scripts = "Scripts",
-        HubBrowser = "Hub Browser",
-        GameBrowser = "Game Browser",
-        PlayerCenter = "Player Center",
-        AvatarCenter = "Avatar Center",
-        AnimationCenter = "Animation Center",
-        MusicCenter = "Music Center",
-        AICenter = "AI Center",
-        CloudCenter = "Cloud Center",
-        Premium = "Premium",
-        Settings = "Settings",
-    }
-    self.BreadcrumbText.Text = "Meowl Hub / " .. (pageNames[pageName] or pageName)
-end
-
--- Theme Toggle
-function MeowlHub:ToggleTheme()
-    local themeNames = {"Dark", "Light", "Midnight", "Ocean", "Purple", "Green", "Red", "Gold", "Neon"}
-    local currentIndex = table.find(themeNames, Config.Theme) or 1
-    local nextIndex = currentIndex % #themeNames + 1
-    Config.Theme = themeNames[nextIndex]
-    CurrentTheme = Themes[Config.Theme]
-
-    NotificationSystem:Show("Theme Changed", "Switched to " .. Config.Theme .. " theme!", "success")
-    -- Note: In a full implementation, you would recursively update all UI elements here
-end
-
--- Clock System
-function MeowlHub:StartClock()
-    task.spawn(function()
-        while self.ClockLabel and self.ClockLabel.Parent do
-            local now = os.date("*t")
-            local hour = string.format("%02d", now.hour)
-            local minute = string.format("%02d", now.min)
-            self.ClockLabel.Text = hour .. ":" .. minute
-
-            local days = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"}
-            local months = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"}
-            self.DateLabel.Text = days[now.wday] .. ", " .. months[now.month] .. " " .. now.day .. ", " .. now.year
-
-            task.wait(1)
+    saveBtn.MouseButton1Click:Connect(function()
+        if nameInput.Text ~= "" and codeInput.Text ~= "" then
+            table.insert(SavedScripts, {
+                name = nameInput.Text,
+                code = codeInput.Text
+            })
+            RefreshSavedScripts()
+            popup:Destroy()
         end
     end)
+
+    cancelBtn.MouseButton1Click:Connect(function()
+        popup:Destroy()
+    end)
+end)
+
+-- EXECUTOR TAB
+local ExecutorTab = Create("Frame", {
+    Name = "ExecutorTab",
+    Parent = ContentFrame,
+    Size = UDim2.new(1, 0, 1, 0),
+    BackgroundTransparency = 1,
+    Visible = false,
+})
+
+TabContents["Executor"] = ExecutorTab
+
+local EditorFrame = Create("Frame", {
+    Name = "EditorFrame",
+    Parent = ExecutorTab,
+    Size = UDim2.new(1, -20, 0.6, -10),
+    Position = UDim2.new(0, 10, 0, 10),
+    BackgroundColor3 = Color3.fromRGB(20, 20, 25),
+    BorderSizePixel = 0,
+})
+
+AddUICorner(EditorFrame, 10)
+Create("UIStroke", {Color = Color3.fromRGB(50, 50, 60), Thickness = 1, Parent = EditorFrame})
+
+local LineNumbers = Create("TextLabel", {
+    Name = "LineNumbers",
+    Parent = EditorFrame,
+    Size = UDim2.new(0, 40, 1, -10),
+    Position = UDim2.new(0, 5, 0, 5),
+    BackgroundTransparency = 1,
+    Text = "1",
+    TextColor3 = Color3.fromRGB(80, 80, 90),
+    TextSize = 13,
+    Font = CONFIG.FontMono,
+    TextXAlignment = Enum.TextXAlignment.Right,
+    TextYAlignment = Enum.TextYAlignment.Top,
+})
+
+local CodeScroll = Create("ScrollingFrame", {
+    Name = "CodeScroll",
+    Parent = EditorFrame,
+    Size = UDim2.new(1, -50, 1, -10),
+    Position = UDim2.new(0, 45, 0, 5),
+    BackgroundTransparency = 1,
+    BorderSizePixel = 0,
+    ScrollBarThickness = 5,
+    ScrollBarImageColor3 = Color3.fromRGB(80, 80, 90),
+    CanvasSize = UDim2.new(0, 0, 5, 0),
+})
+
+ExecutorCodeInput = Create("TextBox", {
+    Name = "CodeInput",
+    Parent = CodeScroll,
+    Size = UDim2.new(1, -10, 5, 0),
+    Position = UDim2.new(0, 5, 0, 0),
+    BackgroundTransparency = 1,
+    Text = "-- Meowl Executor
+-- Write your Lua code here
+
+print('Hello from Meowl!')
+",
+    TextColor3 = CONFIG.TextColor,
+    TextSize = 13,
+    Font = CONFIG.FontMono,
+    TextXAlignment = Enum.TextXAlignment.Left,
+    TextYAlignment = Enum.TextYAlignment.Top,
+    MultiLine = true,
+    ClearTextOnFocus = false,
+    TextWrapped = false,
+})
+
+local function UpdateLineNumbers()
+    local text = ExecutorCodeInput.Text
+    local lines = 1
+    for _ in text:gmatch("
+") do lines = lines + 1 end
+    local numbers = {}
+    for i = 1, lines do table.insert(numbers, tostring(i)) end
+    LineNumbers.Text = table.concat(numbers, "
+")
 end
 
--- Performance Monitor
-function MeowlHub:StartPerformanceMonitor()
-    task.spawn(function()
-        local fps = 0
-        local lastUpdate = tick()
+ExecutorCodeInput:GetPropertyChangedSignal("Text"):Connect(UpdateLineNumbers)
+UpdateLineNumbers()
 
-        RunService.RenderStepped:Connect(function()
-            fps = math.floor(1 / (tick() - lastUpdate))
-            lastUpdate = tick()
+local ExecButtonBar = Create("Frame", {
+    Name = "ButtonBar",
+    Parent = ExecutorTab,
+    Size = UDim2.new(1, -20, 0, 40),
+    Position = UDim2.new(0, 10, 0.6, 5),
+    BackgroundTransparency = 1,
+})
+
+ExecBtn = Create("TextButton", {
+    Name = "ExecBtn",
+    Parent = ExecButtonBar,
+    Size = UDim2.new(0, 110, 1, 0),
+    Position = UDim2.new(0, 0, 0, 0),
+    BackgroundColor3 = CONFIG.SuccessColor,
+    BorderSizePixel = 0,
+    Text = "Execute",
+    TextColor3 = CONFIG.TextColor,
+    TextSize = 14,
+    Font = CONFIG.FontBold,
+    AutoButtonColor = false,
+})
+AddUICorner(ExecBtn, 8)
+
+local ClearBtn = Create("TextButton", {
+    Name = "ClearBtn",
+    Parent = ExecButtonBar,
+    Size = UDim2.new(0, 90, 1, 0),
+    Position = UDim2.new(0, 120, 0, 0),
+    BackgroundColor3 = Color3.fromRGB(60, 60, 70),
+    BorderSizePixel = 0,
+    Text = "Clear",
+    TextColor3 = CONFIG.TextColor,
+    TextSize = 14,
+    Font = CONFIG.FontBold,
+    AutoButtonColor = false,
+})
+AddUICorner(ClearBtn, 8)
+
+local CopyCodeBtn = Create("TextButton", {
+    Name = "CopyCodeBtn",
+    Parent = ExecButtonBar,
+    Size = UDim2.new(0, 90, 1, 0),
+    Position = UDim2.new(0, 220, 0, 0),
+    BackgroundColor3 = Color3.fromRGB(60, 60, 70),
+    BorderSizePixel = 0,
+    Text = "Copy",
+    TextColor3 = CONFIG.TextColor,
+    TextSize = 14,
+    Font = CONFIG.FontBold,
+    AutoButtonColor = false,
+})
+AddUICorner(CopyCodeBtn, 8)
+
+local SaveToHomeBtn = Create("TextButton", {
+    Name = "SaveToHomeBtn",
+    Parent = ExecButtonBar,
+    Size = UDim2.new(0, 120, 1, 0),
+    Position = UDim2.new(0, 320, 0, 0),
+    BackgroundColor3 = CONFIG.AccentColor,
+    BorderSizePixel = 0,
+    Text = "Save to Home",
+    TextColor3 = CONFIG.TextColor,
+    TextSize = 14,
+    Font = CONFIG.FontBold,
+    AutoButtonColor = false,
+})
+AddUICorner(SaveToHomeBtn, 8)
+
+function AddOutput(text, isError)
+    local timestamp = os.date("%H:%M:%S")
+    local prefix = isError and "[ERROR]" or "[INFO]"
+    OutputText.Text = OutputText.Text .. string.format("[%s] %s %s
+", timestamp, prefix, text)
+    task.delay(0.1, function()
+        OutputScroll.CanvasPosition = Vector2.new(0, OutputScroll.AbsoluteCanvasSize.Y)
+    end)
+end
+
+ExecBtn.MouseButton1Click:Connect(function()
+    local code = ExecutorCodeInput.Text
+    if code:gsub("%s", "") == "" then return end
+
+    AddOutput("Executing code...", false)
+
+    local env = setmetatable({
+        print = function(...)
+            local args = {...}
+            local str = ""
+            for i, v in ipairs(args) do str = str .. tostring(v) .. (i < #args and " " or "") end
+            AddOutput(str, false)
+        end,
+        warn = function(...)
+            local args = {...}
+            local str = ""
+            for i, v in ipairs(args) do str = str .. tostring(v) .. (i < #args and " " or "") end
+            AddOutput("WARN: " .. str, true)
+        end,
+        game = game, workspace = workspace, script = script,
+        Players = Players, TweenService = TweenService,
+        _G = _G, pairs = pairs, ipairs = ipairs,
+        next = next, tonumber = tonumber, tostring = tostring,
+        type = type, typeof = typeof, unpack = unpack,
+        select = select, pcall = pcall, xpcall = xpcall,
+        assert = assert, rawget = rawget, rawset = rawset,
+        rawequal = rawequal, math = math, string = string,
+        table = table, coroutine = coroutine,
+        os = {clock = os.clock, date = os.date, difftime = os.difftime, time = os.time},
+        Instance = Instance, Vector3 = Vector3, Vector2 = Vector2,
+        Color3 = Color3, CFrame = CFrame, UDim = UDim, UDim2 = UDim2,
+        Enum = Enum, TweenInfo = TweenInfo, tick = tick, time = time,
+        wait = task.wait, spawn = task.spawn, delay = task.delay, task = task,
+    }, {__index = _G})
+
+    local func, compileErr = loadstring(code)
+    if not func then
+        AddOutput("Compilation Error: " .. tostring(compileErr), true)
+        return
+    end
+
+    setfenv(func, env)
+    local success, result = pcall(func)
+    if not success then
+        AddOutput("Runtime Error: " .. tostring(result), true)
+    else
+        if result ~= nil then AddOutput("Returned: " .. tostring(result), false) end
+        AddOutput("Execution completed!", false)
+    end
+end)
+
+ClearBtn.MouseButton1Click:Connect(function()
+    ExecutorCodeInput.Text = ""
+    UpdateLineNumbers()
+end)
+
+CopyCodeBtn.MouseButton1Click:Connect(function()
+    local originalText = CopyCodeBtn.Text
+    CopyCodeBtn.Text = "Copied!"
+    task.delay(1.5, function()
+        CopyCodeBtn.Text = originalText
+    end)
+end)
+
+SaveToHomeBtn.MouseButton1Click:Connect(function()
+    local code = ExecutorCodeInput.Text
+    if code:gsub("%s", "") == "" then return end
+
+    local firstLine = code:match("^[^
+]*") or "Untitled"
+    firstLine = firstLine:gsub("^%-%-%s*", ""):gsub("^%s*(.-)%s*$", "%1")
+    if firstLine == "" then firstLine = "Untitled Script" end
+    if firstLine:len() > 30 then firstLine = firstLine:sub(1, 30) .. "..." end
+
+    table.insert(SavedScripts, {
+        name = firstLine,
+        code = code
+    })
+
+    local originalText = SaveToHomeBtn.Text
+    SaveToHomeBtn.Text = "Saved!"
+    task.delay(1.5, function()
+        SaveToHomeBtn.Text = originalText
+    end)
+
+    RefreshSavedScripts()
+end)
+
+local OutputFrame = Create("Frame", {
+    Name = "OutputFrame",
+    Parent = ExecutorTab,
+    Size = UDim2.new(1, -20, 0.35, -15),
+    Position = UDim2.new(0, 10, 0.6, 50),
+    BackgroundColor3 = Color3.fromRGB(18, 18, 23),
+    BorderSizePixel = 0,
+})
+
+AddUICorner(OutputFrame, 10)
+Create("UIStroke", {Color = Color3.fromRGB(50, 50, 60), Thickness = 1, Parent = OutputFrame})
+
+local OutputHeader = Create("Frame", {
+    Name = "OutputHeader",
+    Parent = OutputFrame,
+    Size = UDim2.new(1, 0, 0, 30),
+    BackgroundColor3 = Color3.fromRGB(28, 28, 35),
+    BorderSizePixel = 0,
+})
+
+AddUICorner(OutputHeader, 10)
+Create("Frame", {Name = "Fix", Parent = OutputHeader, Size = UDim2.new(1, 0, 0.5, 0), Position = UDim2.new(0, 0, 0.5, 0), BackgroundColor3 = OutputHeader.BackgroundColor3, BorderSizePixel = 0})
+
+Create("TextLabel", {
+    Parent = OutputHeader,
+    Size = UDim2.new(1, -20, 1, 0),
+    Position = UDim2.new(0, 10, 0, 0),
+    BackgroundTransparency = 1,
+    Text = "Output Console",
+    TextColor3 = CONFIG.SubTextColor,
+    TextSize = 12,
+    Font = CONFIG.FontBold,
+    TextXAlignment = Enum.TextXAlignment.Left,
+})
+
+local ClearOutputBtn = Create("TextButton", {
+    Parent = OutputHeader,
+    Size = UDim2.new(0, 55, 0, 22),
+    Position = UDim2.new(1, -65, 0.5, -11),
+    BackgroundColor3 = Color3.fromRGB(50, 50, 60),
+    BorderSizePixel = 0,
+    Text = "Clear",
+    TextColor3 = CONFIG.SubTextColor,
+    TextSize = 11,
+    Font = CONFIG.Font,
+    AutoButtonColor = false,
+})
+AddUICorner(ClearOutputBtn, 5)
+
+OutputScroll = Create("ScrollingFrame", {
+    Name = "OutputScroll",
+    Parent = OutputFrame,
+    Size = UDim2.new(1, -10, 1, -40),
+    Position = UDim2.new(0, 5, 0, 35),
+    BackgroundTransparency = 1,
+    BorderSizePixel = 0,
+    ScrollBarThickness = 4,
+    ScrollBarImageColor3 = Color3.fromRGB(80, 80, 90),
+    CanvasSize = UDim2.new(0, 0, 0, 0),
+    AutomaticCanvasSize = Enum.AutomaticSize.Y,
+})
+
+OutputText = Create("TextLabel", {
+    Name = "OutputText",
+    Parent = OutputScroll,
+    Size = UDim2.new(1, -10, 0, 0),
+    Position = UDim2.new(0, 5, 0, 0),
+    BackgroundTransparency = 1,
+    Text = "> Meowl Executor ready...
+> Waiting for code execution...
+",
+    TextColor3 = Color3.fromRGB(200, 200, 210),
+    TextSize = 12,
+    Font = CONFIG.FontMono,
+    TextXAlignment = Enum.TextXAlignment.Left,
+    TextYAlignment = Enum.TextYAlignment.Top,
+    AutomaticSize = Enum.AutomaticSize.Y,
+    TextWrapped = true,
+})
+
+ClearOutputBtn.MouseButton1Click:Connect(function()
+    OutputText.Text = "> Console cleared.
+"
+end)
+
+-- CLOUD TAB
+local CloudTab = Create("Frame", {
+    Name = "CloudTab",
+    Parent = ContentFrame,
+    Size = UDim2.new(1, 0, 1, 0),
+    BackgroundTransparency = 1,
+    Visible = false,
+})
+
+TabContents["Cloud"] = CloudTab
+
+local CloudTitle = Create("TextLabel", {
+    Name = "Title",
+    Parent = CloudTab,
+    Size = UDim2.new(1, -20, 0, 30),
+    Position = UDim2.new(0, 15, 0, 12),
+    BackgroundTransparency = 1,
+    Text = "Cloud Scripts",
+    TextColor3 = CONFIG.TextColor,
+    TextSize = 20,
+    Font = CONFIG.FontBold,
+    TextXAlignment = Enum.TextXAlignment.Left,
+})
+
+local CloudDesc = Create("TextLabel", {
+    Name = "Desc",
+    Parent = CloudTab,
+    Size = UDim2.new(1, -20, 0, 20),
+    Position = UDim2.new(0, 15, 0, 42),
+    BackgroundTransparency = 1,
+    Text = "Browse and copy from 12 popular scripts",
+    TextColor3 = CONFIG.SubTextColor,
+    TextSize = 13,
+    Font = CONFIG.Font,
+    TextXAlignment = Enum.TextXAlignment.Left,
+})
+
+local CloudScroll = Create("ScrollingFrame", {
+    Name = "CloudScroll",
+    Parent = CloudTab,
+    Size = UDim2.new(1, -20, 1, -75),
+    Position = UDim2.new(0, 10, 0, 70),
+    BackgroundColor3 = Color3.fromRGB(22, 22, 28),
+    BorderSizePixel = 0,
+    ScrollBarThickness = 6,
+    ScrollBarImageColor3 = Color3.fromRGB(80, 80, 90),
+    CanvasSize = UDim2.new(0, 0, 0, 0),
+    AutomaticCanvasSize = Enum.AutomaticSize.Y,
+})
+
+AddUICorner(CloudScroll, 10)
+
+Create("UIPadding", {
+    Parent = CloudScroll,
+    PaddingLeft = UDim.new(0, 12),
+    PaddingRight = UDim.new(0, 12),
+    PaddingTop = UDim.new(0, 12),
+    PaddingBottom = UDim.new(0, 12),
+})
+
+Create("UIGridLayout", {
+    Parent = CloudScroll,
+    CellSize = UDim2.new(0.5, -8, 0, 100),
+    CellPadding = UDim2.new(0, 10, 0, 10),
+    FillDirection = Enum.FillDirection.Horizontal,
+    HorizontalAlignment = Enum.HorizontalAlignment.Center,
+})
+
+for i, cloudScript in ipairs(CloudScripts) do
+    local card = Create("Frame", {
+        Name = "Cloud_" .. i,
+        Parent = CloudScroll,
+        Size = UDim2.new(0, 0, 0, 0),
+        BackgroundColor3 = CONFIG.SecondaryColor,
+        BorderSizePixel = 0,
+    })
+
+    AddUICorner(card, 10)
+    Create("UIStroke", {Color = Color3.fromRGB(60, 60, 75), Thickness = 1, Parent = card})
+
+    Create("TextLabel", {
+        Parent = card,
+        Size = UDim2.new(1, -16, 0, 22),
+        Position = UDim2.new(0, 8, 0, 8),
+        BackgroundTransparency = 1,
+        Text = cloudScript.name,
+        TextColor3 = CONFIG.AccentColor,
+        TextSize = 15,
+        Font = CONFIG.FontBold,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextTruncate = Enum.TextTruncate.AtEnd,
+    })
+
+    Create("TextLabel", {
+        Parent = card,
+        Size = UDim2.new(1, -16, 0, 18),
+        Position = UDim2.new(0, 8, 0, 32),
+        BackgroundTransparency = 1,
+        Text = cloudScript.desc,
+        TextColor3 = CONFIG.SubTextColor,
+        TextSize = 11,
+        Font = CONFIG.Font,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextTruncate = Enum.TextTruncate.AtEnd,
+    })
+
+    local copyToExec = Create("TextButton", {
+        Parent = card,
+        Size = UDim2.new(0.48, -4, 0, 32),
+        Position = UDim2.new(0, 8, 1, -42),
+        BackgroundColor3 = CONFIG.AccentColor,
+        BorderSizePixel = 0,
+        Text = "Copy",
+        TextColor3 = CONFIG.TextColor,
+        TextSize = 12,
+        Font = CONFIG.FontBold,
+        AutoButtonColor = false,
+    })
+    AddUICorner(copyToExec, 6)
+
+    copyToExec.MouseButton1Click:Connect(function()
+        ExecutorCodeInput.Text = cloudScript.code
+        SwitchTab("Executor")
+        AddOutput("Loaded '" .. cloudScript.name .. "' from Cloud", false)
+    end)
+
+    local execDirect = Create("TextButton", {
+        Parent = card,
+        Size = UDim2.new(0.48, -4, 0, 32),
+        Position = UDim2.new(0.52, 0, 1, -42),
+        BackgroundColor3 = CONFIG.SuccessColor,
+        BorderSizePixel = 0,
+        Text = "Run",
+        TextColor3 = CONFIG.TextColor,
+        TextSize = 12,
+        Font = CONFIG.FontBold,
+        AutoButtonColor = false,
+    })
+    AddUICorner(execDirect, 6)
+
+    execDirect.MouseButton1Click:Connect(function()
+        ExecutorCodeInput.Text = cloudScript.code
+        SwitchTab("Executor")
+        task.delay(0.3, function()
+            ExecBtn.MouseButton1Click:Fire()
         end)
+    end)
+end
 
-        -- Create performance display
-        local perfDisplay = Utility:Create("Frame", {
-            Size = UDim2.new(0, 200, 0, 30),
-            Position = UDim2.new(0, 260, 0, 65),
-            BackgroundColor3 = Color3.fromRGB(0, 0, 0),
-            BackgroundTransparency = 0.7,
+-- SETTINGS TAB
+local SettingsTab = Create("Frame", {
+    Name = "SettingsTab",
+    Parent = ContentFrame,
+    Size = UDim2.new(1, 0, 1, 0),
+    BackgroundTransparency = 1,
+    Visible = false,
+})
+
+TabContents["Settings"] = SettingsTab
+
+local SettingsTitle = Create("TextLabel", {
+    Name = "Title",
+    Parent = SettingsTab,
+    Size = UDim2.new(1, -20, 0, 30),
+    Position = UDim2.new(0, 15, 0, 12),
+    BackgroundTransparency = 1,
+    Text = "Settings",
+    TextColor3 = CONFIG.TextColor,
+    TextSize = 20,
+    Font = CONFIG.FontBold,
+    TextXAlignment = Enum.TextXAlignment.Left,
+})
+
+local SettingsContainer = Create("Frame", {
+    Name = "SettingsContainer",
+    Parent = SettingsTab,
+    Size = UDim2.new(1, -20, 1, -60),
+    Position = UDim2.new(0, 10, 0, 50),
+    BackgroundColor3 = Color3.fromRGB(22, 22, 28),
+    BorderSizePixel = 0,
+})
+
+AddUICorner(SettingsContainer, 10)
+
+local settingsItems = {
+    {label = "UI Theme", desc = "Current: Meowl Purple", type = "info"},
+    {label = "Toggle Key", desc = "RightShift to show/hide", type = "info"},
+    {label = "Clear All Saved", desc = "Delete all saved scripts", type = "danger", action = function()
+        SavedScripts = {}
+        RefreshSavedScripts()
+        AddOutput("All saved scripts cleared!", false)
+    end},
+    {label = "Reset Executor", desc = "Clear editor and output", type = "normal", action = function()
+        ExecutorCodeInput.Text = ""
+        OutputText.Text = "> Executor reset.
+"
+        UpdateLineNumbers()
+    end},
+    {label = "Executor Info", desc = "Version: 2.0 | Made by Meowl", type = "info"},
+}
+
+for i, item in ipairs(settingsItems) do
+    local row = Create("Frame", {
+        Parent = SettingsContainer,
+        Size = UDim2.new(1, -20, 0, 60),
+        Position = UDim2.new(0, 10, 0, 10 + (i - 1) * 70),
+        BackgroundColor3 = CONFIG.SecondaryColor,
+        BorderSizePixel = 0,
+    })
+    AddUICorner(row, 8)
+
+    Create("TextLabel", {
+        Parent = row,
+        Size = UDim2.new(1, -20, 0, 22),
+        Position = UDim2.new(0, 12, 0, 8),
+        BackgroundTransparency = 1,
+        Text = item.label,
+        TextColor3 = CONFIG.TextColor,
+        TextSize = 14,
+        Font = CONFIG.FontBold,
+        TextXAlignment = Enum.TextXAlignment.Left,
+    })
+
+    Create("TextLabel", {
+        Parent = row,
+        Size = UDim2.new(1, -20, 0, 18),
+        Position = UDim2.new(0, 12, 0, 32),
+        BackgroundTransparency = 1,
+        Text = item.desc,
+        TextColor3 = CONFIG.SubTextColor,
+        TextSize = 12,
+        Font = CONFIG.Font,
+        TextXAlignment = Enum.TextXAlignment.Left,
+    })
+
+    if item.action then
+        local actionBtn = Create("TextButton", {
+            Parent = row,
+            Size = UDim2.new(0, 80, 0, 32),
+            Position = UDim2.new(1, -92, 0.5, -16),
+            BackgroundColor3 = (item.type == "danger") and CONFIG.ErrorColor or CONFIG.AccentColor,
             BorderSizePixel = 0,
-            Parent = self.Main,
+            Text = (item.type == "danger") and "Clear" or "Apply",
+            TextColor3 = CONFIG.TextColor,
+            TextSize = 12,
+            Font = CONFIG.FontBold,
+            AutoButtonColor = false,
         })
-        Utility:Create("UICorner", {CornerRadius = UDim.new(0, 6), Parent = perfDisplay})
+        AddUICorner(actionBtn, 6)
 
-        local perfText = Utility:Create("TextLabel", {
-            Size = UDim2.new(1, -10, 1, 0),
-            Position = UDim2.new(0, 5, 0, 0),
-            BackgroundTransparency = 1,
-            Text = "FPS: 144 | Ping: 24ms | Mem: 1.2GB",
-            TextColor3 = CurrentTheme.TextMuted,
-            TextSize = 10,
-            Font = Enum.Font.Gotham,
-            TextXAlignment = Enum.TextXAlignment.Left,
-            Parent = perfDisplay,
-        })
+        actionBtn.MouseButton1Click:Connect(function()
+            item.action()
+            actionBtn.Text = "Done"
+            task.delay(1, function()
+                actionBtn.Text = (item.type == "danger") and "Clear" or "Apply"
+            end)
+        end)
+    end
+end
 
-        while perfText.Parent do
-            local ping = Utility:GetPing()
-            perfText.Text = "FPS: " .. fps .. " | Ping: " .. ping .. "ms | Mem: 1.2GB"
-            task.wait(0.5)
-        end
+-- UNLOCK LOGIC
+local function UnlockExecutor()
+    Tween(KeyFrame, {Size = UDim2.new(0, 440, 0, 0)}, 0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+    Tween(KeyFrame, {Position = UDim2.new(0.5, -220, 0.5, 0)}, 0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+    task.delay(0.4, function()
+        KeyFrame.Visible = false
+        MainFrame.Visible = true
+        MainFrame.Size = UDim2.new(0, 800, 0, 0)
+        MainFrame.Position = UDim2.new(0.5, -400, 0.5, 0)
+        Tween(MainFrame, {Size = UDim2.new(0, 800, 0, 550)}, 0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+        Tween(MainFrame, {Position = UDim2.new(0.5, -400, 0.5, -275)}, 0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
     end)
 end
 
--- RGB Mode
-function MeowlHub:StartRGBMode()
-    task.spawn(function()
-        local hue = 0
-        while Config.RGBMode do
-            hue = (hue + 0.005) % 1
-            Config.AccentColor = Color3.fromHSV(hue, 0.8, 1)
+UnlockBtn.MouseButton1Click:Connect(function()
+    local input = KeyInput.Text:gsub("^%s*(.-)%s*$", "%1")
+    if input == "" then
+        StatusLabel.Text = "Please enter a key"
+        return
+    end
+    if input == CONFIG.ValidKey then
+        StatusLabel.TextColor3 = CONFIG.SuccessColor
+        StatusLabel.Text = "Access granted! Unlocking..."
+        task.delay(0.5, UnlockExecutor)
+    else
+        StatusLabel.TextColor3 = CONFIG.ErrorColor
+        StatusLabel.Text = "Invalid key. Copy the key above and paste it."
+        KeyInput.Text = ""
+    end
+end)
 
-            -- Update main stroke
-            if self.Main then
-                local stroke = self.Main:FindFirstChild("UIStroke")
-                if stroke then
-                    stroke.Color = Config.AccentColor
-                end
-            end
+KeyInput.FocusLost:Connect(function(enterPressed)
+    if enterPressed then UnlockBtn.MouseButton1Click:Fire() end
+end)
 
-            task.wait(0.05)
-        end
-    end)
-end
-
--- Draggable
-function MeowlHub:MakeDraggable(frame)
+-- DRAGGABLE & TOGGLE
+local function MakeDraggable(frame, handle)
+    handle = handle or frame
     local dragging = false
-    local dragStart = nil
-    local startPos = nil
+    local dragStart, startPos
 
-    frame.InputBegan:Connect(function(input)
+    handle.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragging = true
             dragStart = input.Position
             startPos = frame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then dragging = false end
+            end)
         end
     end)
 
@@ -1857,98 +1425,30 @@ function MeowlHub:MakeDraggable(frame)
             frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
         end
     end)
-
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = false
-        end
-    end)
 end
 
--- ═══════════════════════════════════════════════════════════════
---  PLACEHOLDER PAGES
--- ═══════════════════════════════════════════════════════════════
-function MeowlHub:BuildHubBrowser()
-    self.Pages.HubBrowser = Utility:Create("ScrollingFrame", {
-        Name = "HubBrowser",
-        Size = UDim2.new(1, -240, 1, -60), Position = UDim2.new(0, 240, 0, 60),
-        BackgroundTransparency = 1, ScrollBarThickness = 4,
-        ScrollBarImageColor3 = Config.AccentColor,
-        CanvasSize = UDim2.new(0, 0, 0, 400),
-        Parent = self.Main, Visible = false,
-    })
-    self:BuildPlaceholderPage(self.Pages.HubBrowser, "🌐 Hub Browser", "Browse and discover new script hubs")
-end
+MakeDraggable(KeyFrame)
+MakeDraggable(MainFrame, TopBar)
 
-function MeowlHub:BuildGameBrowser()
-    self.Pages.GameBrowser = Utility:Create("ScrollingFrame", {
-        Name = "GameBrowser",
-        Size = UDim2.new(1, -240, 1, -60), Position = UDim2.new(0, 240, 0, 60),
-        BackgroundTransparency = 1, ScrollBarThickness = 4,
-        ScrollBarImageColor3 = Config.AccentColor,
-        CanvasSize = UDim2.new(0, 0, 0, 400),
-        Parent = self.Main, Visible = false,
-    })
-    self:BuildPlaceholderPage(self.Pages.GameBrowser, "🎮 Game Browser", "Browse supported games and scripts")
-end
-
-function MeowlHub:BuildPlaceholderPage(page, title, subtitle)
-    Utility:Create("TextLabel", {
-        Size = UDim2.new(1, -40, 0, 30), Position = UDim2.new(0, 20, 0, 20),
-        BackgroundTransparency = 1, Text = title,
-        TextColor3 = CurrentTheme.TextPrimary, TextSize = 20,
-        Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = page,
-    })
-
-    Utility:Create("TextLabel", {
-        Size = UDim2.new(1, -40, 0, 20), Position = UDim2.new(0, 20, 0, 60),
-        BackgroundTransparency = 1, Text = subtitle,
-        TextColor3 = CurrentTheme.TextMuted, TextSize = 14,
-        Font = Enum.Font.Gotham, TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = page,
-    })
-
-    -- Coming soon card
-    local card = Utility:Create("Frame", {
-        Size = UDim2.new(0, 400, 0, 200), Position = UDim2.new(0.5, -200, 0.5, -100),
-        BackgroundColor3 = CurrentTheme.Card, BackgroundTransparency = 0.1,
-        BorderSizePixel = 0, Parent = page,
-    })
-    Utility:Create("UICorner", {CornerRadius = UDim.new(0, 16), Parent = card})
-    Utility:Create("UIStroke", {Color = Config.AccentColor, Thickness = 1, Transparency = 0.5, Parent = card})
-
-    Utility:Create("TextLabel", {
-        Size = UDim2.new(1, 0, 0, 40), Position = UDim2.new(0, 0, 0, 50),
-        BackgroundTransparency = 1, Text = "🚧 Coming Soon",
-        TextColor3 = Config.AccentColor, TextSize = 24,
-        Font = Enum.Font.GothamBold, Parent = card,
-    })
-
-    Utility:Create("TextLabel", {
-        Size = UDim2.new(1, -40, 0, 20), Position = UDim2.new(0, 20, 0, 100),
-        BackgroundTransparency = 1, Text = "This feature is under development.",
-        TextColor3 = CurrentTheme.TextSecondary, TextSize = 13,
-        Font = Enum.Font.Gotham, Parent = card,
-    })
-end
-
--- ═══════════════════════════════════════════════════════════════
---  INITIALIZATION
--- ═══════════════════════════════════════════════════════════════
-MeowlHub:BuildHubBrowser()
-MeowlHub:BuildGameBrowser()
-MeowlHub:Init()
-
--- Keybind to toggle UI (RightShift)
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not gameProcessed and input.KeyCode == Enum.KeyCode.RightShift then
-        MeowlHub.Main.Visible = not MeowlHub.Main.Visible
-        if MeowlHub.Blur then
-            MeowlHub.Blur.Size = MeowlHub.Main.Visible and 10 or 0
+        if MainFrame.Visible then
+            MainFrame.Visible = false
+        elseif KeyFrame.Visible then
+            KeyFrame.Visible = false
+        else
+            KeyFrame.Visible = true
+            KeyFrame.Size = UDim2.new(0, 440, 0, 340)
+            KeyFrame.Position = UDim2.new(0.5, -220, 0.5, -170)
         end
     end
 end)
 
-print("🐱 Meowl Hub V10 Ultimate loaded successfully!")
-print("Press RightShift to toggle the UI")
+-- INITIAL ANIMATION
+KeyFrame.Size = UDim2.new(0, 440, 0, 0)
+KeyFrame.Position = UDim2.new(0.5, -220, 0.5, 0)
+
+Tween(KeyFrame, {Size = UDim2.new(0, 440, 0, 340)}, 0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+Tween(KeyFrame, {Position = UDim2.new(0.5, -220, 0.5, -170)}, 0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+
+print("Meowl Executor v2.0 loaded! Press RightShift to toggle.")
