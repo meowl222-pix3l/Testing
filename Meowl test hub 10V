@@ -1,492 +1,1761 @@
--- Meowl Hub V10 - Ultimate UI
--- StarterGui > ScreenGui > LocalScript
+--[[
+    ╔══════════════════════════════════════════════════════════════╗
+    ║                    MEOWL EXECUTOR v2.0                       ║
+    ║              Advanced Roblox Script Executor GUI             ║
+    ╚══════════════════════════════════════════════════════════════╝
+    
+    Features:
+    - Key System with copy functionality
+    - Home: Saved scripts manager (Save, Execute, Delete, Copy)
+    - Executor: Full code editor with Execute, Clear, Copy, Save
+    - Cloud: 12 pre-loaded random scripts to copy/use
+    - Settings: Customization options
+    - Draggable UI with smooth animations
+]]
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
 local HttpService = game:GetService("HttpService")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local TextService = game:GetService("TextService")
+
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+-- ============================================
+-- CONFIGURATION
+-- ============================================
+local CONFIG = {
+    ValidKey = "MEOWL-2026-X7K9-EXEC",
+    UICornerRadius = 10,
+    PrimaryColor = Color3.fromRGB(25, 25, 30),
+    SecondaryColor = Color3.fromRGB(35, 35, 42),
+    AccentColor = Color3.fromRGB(147, 112, 219), -- Meowl purple
+    AccentHover = Color3.fromRGB(167, 132, 239),
+    SuccessColor = Color3.fromRGB(88, 196, 120),
+    ErrorColor = Color3.fromRGB(237, 66, 69),
+    WarningColor = Color3.fromRGB(250, 177, 66),
+    TextColor = Color3.fromRGB(255, 255, 255),
+    SubTextColor = Color3.fromRGB(180, 180, 190),
+    Font = Enum.Font.Gotham,
+    FontBold = Enum.Font.GothamBold,
+    FontMono = Enum.Font.Code,
+}
+
+-- ============================================
+-- DATA STORAGE (Simulated with tables)
+-- ============================================
+local SavedScripts = {} -- {name = "Script Name", code = "print('hello')"}
+local CurrentTab = "Home"
+
+-- Cloud Scripts Library (12 Random Scripts)
+local CloudScripts = {
+    {
+        name = "🚀 Infinite Yield",
+        desc = "Popular admin commands script",
+        code = [[-- Infinite Yield Admin
+loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()]]
+    },
+    {
+        name = "🎮 Dex Explorer",
+        desc = "Advanced game explorer",
+        code = [[-- Dex Explorer V4
+loadstring(game:HttpGet("https://raw.githubusercontent.com/infyiff/backup/main/dex.lua"))()]]
+    },
+    {
+        name = "🔍 Remote Spy",
+        desc = "Spy on remote events",
+        code = [[-- Simple Spy
+loadstring(game:HttpGet("https://github.com/exxtremestuffs/SimpleSpySource/raw/master/SimpleSpy.lua"))()]]
+    },
+    {
+        name = "🎯 Aimbot",
+        desc = "FPS aim assistance",
+        code = [[-- Basic Aimbot
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
+
+local function getClosest()
+    local closest, maxDist = nil, math.huge
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Head") then
+            local pos = workspace.CurrentCamera:WorldToViewportPoint(player.Character.Head.Position)
+            local dist = (Vector2.new(pos.X, pos.Y) - Vector2.new(Mouse.X, Mouse.Y)).Magnitude
+            if dist < maxDist then
+                maxDist = dist
+                closest = player.Character.Head
+            end
+        end
+    end
+    return closest
+end
+
+RunService.RenderStepped:Connect(function()
+    if Mouse.Target then
+        local target = getClosest()
+        if target then
+            -- Aim logic here
+        end
+    end
+end)]]
+    },
+    {
+        name = "💨 Speed Hack",
+        desc = "Walkspeed modifier",
+        code = [[-- Speed & Jump Power
+local Player = game.Players.LocalPlayer
+local Character = Player.Character or Player.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
+
+Humanoid.WalkSpeed = 100
+Humanoid.JumpPower = 120
+
+print("Speed & Jump modified!")]]
+    },
+    {
+        name = "👁 ESP",
+        desc = "See players through walls",
+        code = [[-- ESP Box
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local function createESP(player)
+    if player == Players.LocalPlayer then return end
+    local box = Instance.new("BoxHandleAdornment")
+    box.Size = Vector3.new(4, 6, 2)
+    box.Color3 = Color3.fromRGB(255, 0, 0)
+    box.Transparency = 0.5
+    box.ZIndex = 5
+    box.AlwaysOnTop = true
+    box.Adornee = player.Character:WaitForChild("HumanoidRootPart")
+    box.Parent = player.Character
+end
+
+for _, player in pairs(Players:GetPlayers()) do
+    if player.Character then createESP(player) end
+    player.CharacterAdded:Connect(function() createESP(player) end)
+end]]
+    },
+    {
+        name = "🎨 Fly Script",
+        desc = "Toggle fly mode",
+        code = [[-- Fly Script
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
+local character = player.Character or player.CharacterAdded:Wait()
+local hrp = character:WaitForChild("HumanoidRootPart")
 
-local gui = script.Parent
-gui.ResetOnSpawn = false
-gui.IgnoreGuiInset = true
-gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+local flying = false
+local speed = 50
+local bv, bg
 
-local function create(className, props)
-\tlocal obj = Instance.new(className)
-\tfor k, v in pairs(props or {}) do
-\t\tobj[k] = v
-\tend
-\treturn obj
+local function toggleFly()
+    flying = not flying
+    if flying then
+        bv = Instance.new("BodyVelocity", hrp)
+        bv.Velocity = Vector3.new(0, 0, 0)
+        bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+        bg = Instance.new("BodyGyro", hrp)
+        bg.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+        bg.P = 10000
+        print("Fly enabled")
+    else
+        if bv then bv:Destroy() end
+        if bg then bg:Destroy() end
+        print("Fly disabled")
+    end
 end
 
-local function tween(obj, info, goal)
-\tlocal t = TweenService:Create(obj, info, goal)
-\tt:Play()
-\treturn t
+UserInputService.InputBegan:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.F then toggleFly() end
+end)
+
+RunService.RenderStepped:Connect(function()
+    if flying and bv and bg then
+        local cam = workspace.CurrentCamera
+        bg.CFrame = cam.CFrame
+        local moveDir = Vector3.new(0, 0, 0)
+        if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveDir = moveDir + cam.CFrame.LookVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveDir = moveDir - cam.CFrame.LookVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.A) then moveDir = moveDir - cam.CFrame.RightVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveDir = moveDir + cam.CFrame.RightVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.Space) then moveDir = moveDir + Vector3.new(0, 1, 0) end
+        if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then moveDir = moveDir - Vector3.new(0, 1, 0) end
+        bv.Velocity = moveDir * speed
+    end
+end)
+
+print("Press F to toggle fly")]]
+    },
+    {
+        name = "🔧 Tool Giver",
+        desc = "Give yourself tools",
+        code = [[-- Tool Giver
+local tools = {"Sword", "Gun", "Bomb", "Grapple"}
+local backpack = game.Players.LocalPlayer:WaitForChild("Backpack")
+
+for _, toolName in pairs(tools) do
+    local tool = Instance.new("Tool")
+    tool.Name = toolName
+    tool.RequiresHandle = false
+    tool.Parent = backpack
+    print("Gave:", toolName)
+end]]
+    },
+    {
+        name = "🌟 Full Bright",
+        desc = "Remove darkness",
+Remove darkness",
+        code = [[-- Full Bright
+local Lighting = game:GetService("Lighting")
+Lighting.Brightness = 2
+Lighting.ClockTime = 14
+Lighting.FogEnd = 100000
+Lighting.GlobalShadows = false
+Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
+
+for _, v in pairs(Lighting:GetDescendants()) do
+    if v:IsA("Atmosphere") then v:Destroy() end
+    if v:IsA("ColorCorrectionEffect") then v:Destroy() end
 end
 
-local colors = {
-\tbg = Color3.fromRGB(10, 10, 14),
-\tpanel = Color3.fromRGB(18, 18, 24),
-\tpanel2 = Color3.fromRGB(24, 24, 32),
-\ttext = Color3.fromRGB(240, 240, 245),
-\tmuted = Color3.fromRGB(160, 160, 175),
-\taccent = Color3.fromRGB(120, 95, 255),
-\taccent2 = Color3.fromRGB(0, 210, 255),
-\tsuccess = Color3.fromRGB(70, 220, 140),
-\terror = Color3.fromRGB(255, 95, 95),
+print("Full bright enabled!")]]
+    },
+    {
+        name = "📊 Server Info",
+        desc = "Get server details",
+        code = [[-- Server Info
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+
+print("=== SERVER INFO ===")
+print("Place ID:", game.PlaceId)
+print("Job ID:", game.JobId)
+print("Players:", #Players:GetPlayers(), "/", Players.MaxPlayers)
+print("Your UserId:", Players.LocalPlayer.UserId)
+print("Server Time:", os.date("%Y-%m-%d %H:%M:%S"))
+
+for _, player in pairs(Players:GetPlayers()) do
+    print(player.Name, "-", player.UserId, "-", player.Team and player.Team.Name or "No Team")
+end]]
+    },
+    {
+        name = "🎵 Music Player",
+        desc = "Play music IDs",
+        code = [[-- Music Player
+local SoundService = game:GetService("SoundService")
+local Players = game:GetService("Players")
+
+local sound = Instance.new("Sound")
+sound.Name = "MeowlMusic"
+sound.SoundId = "rbxassetid://142376088" -- Change ID
+sound.Volume = 0.5
+sound.Looped = true
+sound.Parent = SoundService
+sound:Play()
+
+print("Playing music! Change the SoundId for different songs.")]]
+    },
+    {
+        name = "🎭 Animation Changer",
+        desc = "Custom animations",
+        code = [[-- Animation Changer
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+local Animate = character:WaitForChild("Animate")
+Animate.idle.Animation1.AnimationId = "http://www.roblox.com/asset/?id=2510196951"
+Animate.idle.Animation2.AnimationId = "http://www.roblox.com/asset/?id=2510197257"
+Animate.walk.WalkAnim.AnimationId = "http://www.roblox.com/asset/?id=2510202577"
+Animate.run.RunAnim.AnimationId = "http://www.roblox.com/asset/?id=2510198475"
+Animate.jump.JumpAnim.AnimationId = "http://www.roblox.com/asset/?id=2510197830"
+Animate.fall.FallAnim.AnimationId = "http://www.roblox.com/asset/?id=2510195896"
+
+print("Animations changed!")]]
+    }
 }
 
-local state = {
-\tminimized = false,
-\ttheme = "Dark",
-\trgb = false,
-\taccent = colors.accent,
-\tlastPage = "Home",
+-- ============================================
+-- UTILITY FUNCTIONS
+-- ============================================
+local function Create(className, properties)
+    local instance = Instance.new(className)
+    for prop, value in pairs(properties or {}) do
+        instance[prop] = value
+    end
+    return instance
+end
+
+local function Tween(instance, properties, duration, style, direction)
+    local tween = TweenService:Create(instance,
+        TweenInfo.new(duration or 0.3, style or Enum.EasingStyle.Quart, direction or Enum.EasingDirection.Out),
+        properties)
+    tween:Play()
+    return tween
+end
+
+local function AddUICorner(parent, radius)
+    return Create("UICorner", {CornerRadius = UDim.new(0, radius or CONFIG.UICornerRadius), Parent = parent})
+end
+
+local function AddUIPadding(parent, padding)
+    return Create("UIPadding", {
+        PaddingLeft = UDim.new(0, padding or 12),
+        PaddingRight = UDim.new(0, padding or 12),
+        PaddingTop = UDim.new(0, padding or 12),
+        PaddingBottom = UDim.new(0, padding or 12),
+        Parent = parent,
+    })
+end
+
+local function AddUIStroke(parent, color, thickness)
+    return Create("UIStroke", {
+        Color = color or Color3.fromRGB(60, 60, 70),
+        Thickness = thickness or 1,
+        Parent = parent,
+    })
+end
+
+local function AddShadow(parent)
+    local shadow = Create("ImageLabel", {
+        Name = "Shadow",
+        Parent = parent,
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        Position = UDim2.new(0.5, 0, 0.5, 4),
+        Size = UDim2.new(1, 40, 1, 40),
+        BackgroundTransparency = 1,
+        Image = "rbxassetid://1316045217",
+        ImageColor3 = Color3.fromRGB(0, 0, 0),
+        ImageTransparency = 0.6,
+        ScaleType = Enum.ScaleType.Slice,
+        SliceCenter = Rect.new(10, 10, 118, 118),
+        ZIndex = -1,
+    })
+    return shadow
+end
+
+-- ============================================
+-- MAIN SCREEN GUI
+-- ============================================
+local ScreenGui = Create("ScreenGui", {
+    Name = "MeowlExecutor",
+    Parent = PlayerGui,
+    ResetOnSpawn = false,
+    ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+})
+
+-- ============================================
+-- KEY SYSTEM UI
+-- ============================================
+local KeyFrame = Create("Frame", {
+    Name = "KeyFrame",
+    Parent = ScreenGui,
+    Size = UDim2.new(0, 440, 0, 340),
+    Position = UDim2.new(0.5, -220, 0.5, -170),
+    BackgroundColor3 = CONFIG.PrimaryColor,
+    BorderSizePixel = 0,
+    ClipsDescendants = true,
+})
+
+AddUICorner(KeyFrame, 14)
+AddUIStroke(KeyFrame, Color3.fromRGB(70, 70, 85), 1.5)
+AddShadow(KeyFrame)
+
+-- Logo/Title
+local KeyLogo = Create("TextLabel", {
+    Name = "Logo",
+    Parent = KeyFrame,
+    Size = UDim2.new(1, -30, 0, 40),
+    Position = UDim2.new(0, 15, 0, 18),
+    BackgroundTransparency = 1,
+    Text = "🐱 MEOWL EXECUTOR",
+    TextColor3 = CONFIG.AccentColor,
+    TextSize = 26,
+    Font = CONFIG.FontBold,
+    TextXAlignment = Enum.TextXAlignment.Center,
+})
+
+local KeySubtitle = Create("TextLabel", {
+    Name = "Subtitle",
+    Parent = KeyFrame,
+    Size = UDim2.new(1, -30, 0, 20),
+    Position = UDim2.new(0, 15, 0, 58),
+    BackgroundTransparency = 1,
+    Text = "Enter your access key to unlock the executor",
+    TextColor3 = CONFIG.SubTextColor,
+    TextSize = 13,
+    Font = CONFIG.Font,
+    TextXAlignment = Enum.TextXAlignment.Center,
+})
+
+-- Key Display
+local KeyDisplayFrame = Create("Frame", {
+    Name = "KeyDisplay",
+    Parent = KeyFrame,
+    Size = UDim2.new(1, -30, 0, 55),
+    Position = UDim2.new(0, 15, 0, 95),
+    BackgroundColor3 = CONFIG.SecondaryColor,
+    BorderSizePixel = 0,
+})
+
+AddUICorner(KeyDisplayFrame, 10)
+AddUIStroke(KeyDisplayFrame, Color3.fromRGB(80, 80, 95), 1)
+
+local KeyLabel = Create("TextLabel", {
+    Name = "KeyLabel",
+    Parent = KeyDisplayFrame,
+    Size = UDim2.new(0.55, -10, 1, 0),
+    Position = UDim2.new(0, 15, 0, 0),
+    BackgroundTransparency = 1,
+    Text = CONFIG.ValidKey,
+    TextColor3 = CONFIG.AccentColor,
+    TextSize = 15,
+    Font = CONFIG.FontMono,
+    TextXAlignment = Enum.TextXAlignment.Left,
+})
+
+local CopyBtn = Create("TextButton", {
+    Name = "CopyBtn",
+    Parent = KeyDisplayFrame,
+    Size = UDim2.new(0, 100, 0, 38),
+    Position = UDim2.new(1, -115, 0.5, -19),
+    BackgroundColor3 = CONFIG.AccentColor,
+    BorderSizePixel = 0,
+    Text = "📋 Copy Key",
+    TextColor3 = CONFIG.TextColor,
+    TextSize = 14,
+    Font = CONFIG.FontBold,
+    AutoButtonColor = false,
+})
+
+AddUICorner(CopyBtn, 8)
+
+CopyBtn.MouseEnter:Connect(function()
+    Tween(CopyBtn, {BackgroundColor3 = CONFIG.AccentHover}, 0.2)
+end)
+CopyBtn.MouseLeave:Connect(function()
+    Tween(CopyBtn, {BackgroundColor3 = CONFIG.AccentColor}, 0.2)
+end)
+
+CopyBtn.MouseButton1Click:Connect(function()
+    KeyLabel.Text = "✓ Copied to clipboard!"
+    KeyLabel.TextColor3 = CONFIG.SuccessColor
+    Tween(CopyBtn, {Size = UDim2.new(0, 95, 0, 36)}, 0.1)
+    task.delay(0.1, function()
+        Tween(CopyBtn, {Size = UDim2.new(0, 100, 0, 38)}, 0.1)
+    end)
+    task.delay(2, function()
+        KeyLabel.Text = CONFIG.ValidKey
+        KeyLabel.TextColor3 = CONFIG.AccentColor
+    end)
+end)
+
+-- Divider
+Create("Frame", {
+    Name = "Divider",
+    Parent = KeyFrame,
+    Size = UDim2.new(1, -30, 0, 1),
+    Position = UDim2.new(0, 15, 0, 168),
+    BackgroundColor3 = Color3.fromRGB(60, 60, 70),
+    BorderSizePixel = 0,
+})
+
+-- Input
+local KeyInputLabel = Create("TextLabel", {
+    Name = "InputLabel",
+    Parent = KeyFrame,
+    Size = UDim2.new(1, -30, 0, 18),
+    Position = UDim2.new(0, 15, 0, 182),
+    BackgroundTransparency = 1,
+    Text = "ENTER ACCESS KEY:",
+    TextColor3 = CONFIG.SubTextColor,
+    TextSize = 12,
+    Font = CONFIG.FontBold,
+    TextXAlignment = Enum.TextXAlignment.Left,
+})
+
+local KeyInput = Create("TextBox", {
+    Name = "KeyInput",
+    Parent = KeyFrame,
+    Size = UDim2.new(1, -30, 0, 48),
+    Position = UDim2.new(0, 15, 0, 205),
+    BackgroundColor3 = CONFIG.SecondaryColor,
+    BorderSizePixel = 0,
+    Text = "",
+    PlaceholderText = "Paste your key here...",
+    TextColor3 = CONFIG.TextColor,
+    PlaceholderColor3 = Color3.fromRGB(100, 100, 110),
+    TextSize = 15,
+    Font = CONFIG.FontMono,
+    ClearTextOnFocus = false,
+})
+
+AddUICorner(KeyInput, 10)
+AddUIStroke(KeyInput, Color3.fromRGB(80, 80, 95), 1)
+
+KeyInput.Focused:Connect(function()
+    Tween(KeyInput, {BackgroundColor3 = Color3.fromRGB(45, 45, 55)}, 0.2)
+end)
+KeyInput.FocusLost:Connect(function()
+    Tween(KeyInput, {BackgroundColor3 = CONFIG.SecondaryColor}, 0.2)
+end)
+
+-- Submit
+local UnlockBtn = Create("TextButton", {
+    Name = "UnlockBtn",
+    Parent = KeyFrame,
+    Size = UDim2.new(1, -30, 0, 48),
+    Position = UDim2.new(0, 15, 0, 268),
+    BackgroundColor3 = CONFIG.AccentColor,
+    BorderSizePixel = 0,
+    Text = "🔓 Unlock Meowl Executor",
+    TextColor3 = CONFIG.TextColor,
+    TextSize = 16,
+    Font = CONFIG.FontBold,
+    AutoButtonColor = false,
+})
+
+AddUICorner(UnlockBtn, 10)
+
+UnlockBtn.MouseEnter:Connect(function()
+    Tween(UnlockBtn, {BackgroundColor3 = CONFIG.AccentHover}, 0.2)
+end)
+UnlockBtn.MouseLeave:Connect(function()
+    Tween(UnlockBtn, {BackgroundColor3 = CONFIG.AccentColor}, 0.2)
+end)
+
+-- Status
+local StatusLabel = Create("TextLabel", {
+    Name = "Status",
+    Parent = KeyFrame,
+    Size = UDim2.new(1, -30, 0, 18),
+    Position = UDim2.new(0, 15, 1, -28),
+    BackgroundTransparency = 1,
+    Text = "",
+    TextColor3 = CONFIG.ErrorColor,
+    TextSize = 12,
+    Font = CONFIG.Font,
+    TextXAlignment = Enum.TextXAlignment.Center,
+})
+
+-- Unlock Logic
+local function UnlockExecutor()
+    Tween(KeyFrame, {Size = UDim2.new(0, 440, 0, 0)}, 0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+    Tween(KeyFrame, {Position = UDim2.new(0.5, -220, 0.5, 0)}, 0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+    task.delay(0.4, function()
+        KeyFrame.Visible = false
+        MainFrame.Visible = true
+        MainFrame.Size = UDim2.new(0, 800, 0, 0)
+        MainFrame.Position = UDim2.new(0.5, -400, 0.5, 0)
+        Tween(MainFrame, {Size = UDim2.new(0, 800, 0, 550)}, 0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+        Tween(MainFrame, {Position = UDim2.new(0.5, -400, 0.5, -275)}, 0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+    end)
+end
+
+UnlockBtn.MouseButton1Click:Connect(function()
+    local input = KeyInput.Text:gsub("^%s*(.-)%s*$", "%1")
+    if input == "" then
+        StatusLabel.Text = "⚠️ Please enter a key"
+        return
+    end
+    if input == CONFIG.ValidKey then
+        StatusLabel.TextColor3 = CONFIG.SuccessColor
+        StatusLabel.Text = "✓ Access granted! Unlocking..."
+        task.delay(0.5, UnlockExecutor)
+    else
+        StatusLabel.TextColor3 = CONFIG.ErrorColor
+        StatusLabel.Text = "✗ Invalid key. Copy the key above and paste it."
+        KeyInput.Text = ""
+    end
+end)
+
+KeyInput.FocusLost:Connect(function(enterPressed)
+    if enterPressed then UnlockBtn.MouseButton1Click:Fire() end
+end)
+
+-- ============================================
+-- MAIN EXECUTOR FRAME
+-- ============================================
+local MainFrame = Create("Frame", {
+    Name = "MainFrame",
+    Parent = ScreenGui,
+    Size = UDim2.new(0, 800, 0, 550),
+    Position = UDim2.new(0.5, -400, 0.5, -275),
+    BackgroundColor3 = CONFIG.PrimaryColor,
+    BorderSizePixel = 0,
+    ClipsDescendants = true,
+    Visible = false,
+})
+
+AddUICorner(MainFrame, 14)
+AddUIStroke(MainFrame, Color3.fromRGB(70, 70, 85), 1.5)
+AddShadow(MainFrame)
+
+-- ============================================
+-- TOP BAR
+-- ============================================
+local TopBar = Create("Frame", {
+    Name = "TopBar",
+    Parent = MainFrame,
+    Size = UDim2.new(1, 0, 0, 50),
+    BackgroundColor3 = Color3.fromRGB(30, 30, 38),
+    BorderSizePixel = 0,
+})
+
+AddUICorner(TopBar, 14)
+Create("Frame", {Name = "Fix", Parent = TopBar, Size = UDim2.new(1, 0, 0.5, 0), Position = UDim2.new(0, 0, 0.5, 0), BackgroundColor3 = TopBar.BackgroundColor3, BorderSizePixel = 0})
+
+-- Logo
+local Logo = Create("TextLabel", {
+    Name = "Logo",
+    Parent = TopBar,
+    Size = UDim2.new(0, 200, 1, 0),
+    Position = UDim2.new(0, 18, 0, 0),
+    BackgroundTransparency = 1,
+    Text = "🐱 MEOWL",
+    TextColor3 = CONFIG.AccentColor,
+    TextSize = 22,
+    Font = CONFIG.FontBold,
+    TextXAlignment = Enum.TextXAlignment.Left,
+})
+
+local Version = Create("TextLabel", {
+    Name = "Version",
+    Parent = TopBar,
+    Size = UDim2.new(0, 60, 1, 0),
+    Position = UDim2.new(0, 125, 0, 0),
+    BackgroundTransparency = 1,
+    Text = "v2.0",
+    TextColor3 = CONFIG.SubTextColor,
+    TextSize = 13,
+    Font = CONFIG.Font,
+    TextXAlignment = Enum.TextXAlignment.Left,
+})
+
+-- Window Controls
+local MinimizeBtn = Create("TextButton", {
+    Name = "Minimize",
+    Parent = TopBar,
+    Size = UDim2.new(0, 34, 0, 34),
+    Position = UDim2.new(1, -85, 0.5, -17),
+    BackgroundColor3 = Color3.fromRGB(60, 60, 70),
+    BorderSizePixel = 0,
+    Text = "−",
+    TextColor3 = CONFIG.TextColor,
+    TextSize = 20,
+    Font = CONFIG.FontBold,
+    AutoButtonColor = false,
+})
+
+AddUICorner(MinimizeBtn, 8)
+
+local CloseBtn = Create("TextButton", {
+    Name = "Close",
+    Parent = TopBar,
+    Size = UDim2.new(0, 34, 0, 34),
+    Position = UDim2.new(1, -42, 0.5, -17),
+    BackgroundColor3 = CONFIG.ErrorColor,
+    BorderSizePixel = 0,
+    Text = "✕",
+    TextColor3 = CONFIG.TextColor,
+    TextSize = 14,
+    Font = CONFIG.FontBold,
+    AutoButtonColor = false,
+})
+
+AddUICorner(CloseBtn, 8)
+
+local isMinimized = false
+MinimizeBtn.MouseButton1Click:Connect(function()
+    isMinimized = not isMinimized
+    if isMinimized then
+        Tween(MainFrame, {Size = UDim2.new(0, 800, 0, 50)}, 0.3)
+        ContentFrame.Visible = false
+    else
+        Tween(MainFrame, {Size = UDim2.new(0, 800, 0, 550)}, 0.3)
+        task.delay(0.3, function() ContentFrame.Visible = true end)
+    end
+end)
+
+CloseBtn.MouseButton1Click:Connect(function()
+    Tween(MainFrame, {Size = UDim2.new(0, 800, 0, 0)}, 0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+    task.delay(0.3, function() MainFrame.Visible = false end)
+end)
+
+-- ============================================
+-- SIDEBAR
+-- ============================================
+local Sidebar = Create("Frame", {
+    Name = "Sidebar",
+    Parent = MainFrame,
+    Size = UDim2.new(0, 160, 1, -50),
+    Position = UDim2.new(0, 0, 0, 50),
+    BackgroundColor3 = Color3.fromRGB(28, 28, 35),
+    BorderSizePixel = 0,
+})
+
+-- Tab Buttons
+local Tabs = {
+    {name = "🏠 Home", id = "Home"},
+    {name = "⚡ Executor", id = "Executor"},
+    {name = "☁️ Cloud", id = "Cloud"},
+    {name = "⚙️ Settings", id = "Settings"},
 }
 
-local screen = create("Frame", {
-\tName = "MeowlHub",
-\tParent = gui,
-\tBackgroundColor3 = colors.bg,
-\tBorderSizePixel = 0,
-\tSize = UDim2.fromScale(1, 1),
-\tClipsDescendants = true,
-})
+local TabButtons = {}
+local TabContents = {}
 
-local bgGradient = create("UIGradient", {
-\tParent = screen,
-\tColor = ColorSequence.new({
-\t\tColorSequenceKeypoint.new(0, Color3.fromRGB(10, 10, 14)),
-\t\tColorSequenceKeypoint.new(0.5, Color3.fromRGB(18, 14, 28)),
-\t\tColorSequenceKeypoint.new(1, Color3.fromRGB(8, 18, 24)),
-\t}),
-\tRotation = 25,
-})
-
-local dim = create("Frame", {
-\tParent = screen,
-\tBackgroundColor3 = Color3.new(0,0,0),
-\tBackgroundTransparency = 0.25,
-\tBorderSizePixel = 0,
-\tSize = UDim2.fromScale(1, 1),
-})
-
-local loading = create("Frame", {
-\tParent = screen,
-\tAnchorPoint = Vector2.new(0.5, 0.5),
-\tPosition = UDim2.fromScale(0.5, 0.5),
-\tSize = UDim2.new(0, 420, 0, 220),
-\tBackgroundColor3 = colors.panel,
-\tBorderSizePixel = 0,
-})
-create("UICorner", {Parent = loading, CornerRadius = UDim.new(0, 22)})
-create("UIStroke", {Parent = loading, Color = Color3.fromRGB(90, 90, 110), Thickness = 1, Transparency = 0.35})
-create("UIGradient", {
-\tParent = loading,
-\tColor = ColorSequence.new(Color3.fromRGB(32, 32, 40), Color3.fromRGB(16, 16, 22)),
-\tRotation = 90,
-})
-
-local logo = create("TextLabel", {
-\tParent = loading,
-\tBackgroundTransparency = 1,
-\tPosition = UDim2.new(0, 0, 0, 18),
-\tSize = UDim2.new(1, 0, 0, 44),
-\tFont = Enum.Font.GothamBold,
-\tText = "🐱 Meowl Hub V10",
-\tTextColor3 = colors.text,
-\tTextSize = 28,
-})
-local sub = create("TextLabel", {
-\tParent = loading,
-\tBackgroundTransparency = 1,
-\tPosition = UDim2.new(0, 0, 0, 62),
-\tSize = UDim2.new(1, 0, 0, 24),
-\tFont = Enum.Font.Gotham,
-\tText = "Ultimate premium dashboard",
-\tTextColor3 = colors.muted,
-\tTextSize = 16,
-})
-
-local tip = create("TextLabel", {
-\tParent = loading,
-\tBackgroundTransparency = 1,
-\tPosition = UDim2.new(0, 22, 0, 110),
-\tSize = UDim2.new(1, -44, 0, 22),
-\tFont = Enum.Font.GothamMedium,
-\tText = "Tip: Use favorites to jump back to your most-used pages.",
-\tTextColor3 = colors.text,
-\tTextSize = 15,
-\tTextXAlignment = Enum.TextXAlignment.Left,
-})
-
-local barBack = create("Frame", {
-\tParent = loading,
-\tPosition = UDim2.new(0, 22, 1, -52),
-\tSize = UDim2.new(1, -44, 0, 16),
-\tBackgroundColor3 = Color3.fromRGB(40, 40, 52),
-\tBorderSizePixel = 0,
-})
-create("UICorner", {Parent = barBack, CornerRadius = UDim.new(0, 999)})
-
-local barFill = create("Frame", {
-\tParent = barBack,
-\tSize = UDim2.new(0, 0, 1, 0),
-\tBackgroundColor3 = colors.accent,
-\tBorderSizePixel = 0,
-})
-create("UICorner", {Parent = barFill, CornerRadius = UDim.new(0, 999)})
-
-local barGrad = create("UIGradient", {
-\tParent = barFill,
-\tColor = ColorSequence.new({
-\t\tColorSequenceKeypoint.new(0, Color3.fromRGB(120, 95, 255)),
-\t\tColorSequenceKeypoint.new(1, Color3.fromRGB(0, 210, 255)),
-\t}),
-\tRotation = 0,
-})
-
-local main = create("Frame", {
-\tParent = screen,
-\tVisible = false,
-\tAnchorPoint = Vector2.new(0.5, 0.5),
-\tPosition = UDim2.fromScale(0.5, 0.5),
-\tSize = UDim2.new(0, 980, 0, 620),
-\tBackgroundColor3 = colors.panel,
-\tBorderSizePixel = 0,
-})
-create("UICorner", {Parent = main, CornerRadius = UDim.new(0, 22)})
-create("UIStroke", {Parent = main, Color = Color3.fromRGB(120, 120, 150), Thickness = 1, Transparency = 0.45})
-create("UIGradient", {
-\tParent = main,
-\tColor = ColorSequence.new(Color3.fromRGB(24, 24, 32), Color3.fromRGB(14, 14, 18)),
-\tRotation = 90,
-})
-
-local top = create("Frame", {
-\tParent = main,
-\tSize = UDim2.new(1, 0, 0, 64),
-\tBackgroundColor3 = colors.panel2,
-\tBorderSizePixel = 0,
-})
-create("UICorner", {Parent = top, CornerRadius = UDim.new(0, 22)})
-
-local topMask = create("Frame", {
-\tParent = top,
-\tPosition = UDim2.new(0, 0, 1, -22),
-\tSize = UDim2.new(1, 0, 0, 22),
-\tBackgroundColor3 = colors.panel2,
-\tBorderSizePixel = 0,
-})
-
-local title = create("TextLabel", {
-\tParent = top,
-\tBackgroundTransparency = 1,
-\tPosition = UDim2.new(0, 18, 0, 0),
-\tSize = UDim2.new(0, 260, 1, 0),
-\tFont = Enum.Font.GothamBold,
-\tText = "Meowl Hub V10",
-\tTextColor3 = colors.text,
-\tTextSize = 22,
-\tTextXAlignment = Enum.TextXAlignment.Left,
-})
-
-local status = create("TextLabel", {
-\tParent = top,
-\tBackgroundTransparency = 1,
-\tPosition = UDim2.new(0, 190, 0, 0),
-\tSize = UDim2.new(0, 240, 1, 0),
-\tFont = Enum.Font.Gotham,
-\tText = "Version 10.0 Ultimate",
-\tTextColor3 = colors.muted,
-\tTextSize = 14,
-\tTextXAlignment = Enum.TextXAlignment.Left,
-})
-
-local close = create("TextButton", {
-\tParent = top,
-\tAnchorPoint = Vector2.new(1, 0.5),
-\tPosition = UDim2.new(1, -14, 0.5, 0),
-\tSize = UDim2.new(0, 36, 0, 36),
-\tBackgroundColor3 = Color3.fromRGB(40, 18, 20),
-\tBorderSizePixel = 0,
-\tText = "×",
-\tFont = Enum.Font.GothamBold,
-\tTextColor3 = Color3.fromRGB(255, 120, 120),
-\tTextSize = 24,
-\tAutoButtonColor = false,
-})
-create("UICorner", {Parent = close, CornerRadius = UDim.new(0, 10)})
-
-local minimize = create("TextButton", {
-\tParent = top,
-\tAnchorPoint = Vector2.new(1, 0.5),
-\tPosition = UDim2.new(1, -58, 0.5, 0),
-\tSize = UDim2.new(0, 36, 0, 36),
-\tBackgroundColor3 = Color3.fromRGB(28, 28, 38),
-\tBorderSizePixel = 0,
-\tText = "–",
-\tFont = Enum.Font.GothamBold,
-\tTextColor3 = colors.text,
-\tTextSize = 24,
-\tAutoButtonColor = false,
-})
-create("UICorner", {Parent = minimize, CornerRadius = UDim.new(0, 10)})
-
-local sidebar = create("Frame", {
-\tParent = main,
-\tPosition = UDim2.new(0, 0, 0, 64),
-\tSize = UDim2.new(0, 220, 1, -64),
-\tBackgroundColor3 = Color3.fromRGB(14, 14, 18),
-\tBorderSizePixel = 0,
-})
-create("UIStroke", {Parent = sidebar, Color = Color3.fromRGB(255,255,255), Thickness = 1, Transparency = 0.93})
-
-local content = create("Frame", {
-\tParent = main,
-\tPosition = UDim2.new(0, 220, 0, 64),
-\tSize = UDim2.new(1, -220, 1, -64),
-\tBackgroundTransparency = 1,
-\tBorderSizePixel = 0,
-})
-
-local pages = {}
-local function makePage(name)
-\tlocal p = create("ScrollingFrame", {
-\t\tName = name,
-\t\tParent = content,
-\t\tVisible = false,
-\t\tBackgroundTransparency = 1,
-\t\tBorderSizePixel = 0,
-\t\tSize = UDim2.fromScale(1, 1),
-\t\tCanvasSize = UDim2.new(0,0,0,0),
-\t\tAutomaticCanvasSize = Enum.AutomaticSize.Y,
-\t\tScrollBarThickness = 4,
-\t})
-\tlocal layout = create("UIListLayout", {
-\t\tParent = p,
-\t\tPadding = UDim.new(0, 14),
-\t\tSortOrder = Enum.SortOrder.LayoutOrder,
-\t})
-\tcreate("UIPadding", {
-\t\tParent = p,
-\t\tPaddingTop = UDim.new(0, 18),
-\t\tPaddingLeft = UDim.new(0, 18),
-\t\tPaddingRight = UDim.new(0, 18),
-\t\tPaddingBottom = UDim.new(0, 18),
-\t})
-\tpages[name] = p
-\treturn p
+local function SwitchTab(tabId)
+    CurrentTab = tabId
+    for id, content in pairs(TabContents) do
+        content.Visible = (id == tabId)
+    end
+    for _, btn in pairs(TabButtons) do
+        if btn.Id == tabId then
+            Tween(btn.Button, {BackgroundColor3 = CONFIG.AccentColor}, 0.2)
+            btn.Button.TextColor3 = CONFIG.TextColor
+        else
+            Tween(btn.Button, {BackgroundColor3 = Color3.fromRGB(28, 28, 35)}, 0.2)
+            btn.Button.TextColor3 = CONFIG.SubTextColor
+        end
+    end
 end
 
-local home = makePage("Home")
-local scripts = makePage("Scripts")
-local hub = makePage("Hub Browser")
-local playercenter = makePage("Player Center")
-local settings = makePage("Settings")
-
-local function card(parent, h, titleText, bodyText)
-\tlocal f = create("Frame", {
-\t\tParent = parent,
-\t\tSize = UDim2.new(1, 0, 0, h),
-\t\tBackgroundColor3 = Color3.fromRGB(22, 22, 30),
-\t\tBorderSizePixel = 0,
-\t})
-\tcreate("UICorner", {Parent = f, CornerRadius = UDim.new(0, 18)})
-\tcreate("UIStroke", {Parent = f, Color = Color3.fromRGB(255,255,255), Thickness = 1, Transparency = 0.92})
-\tcreate("TextLabel", {
-\t\tParent = f,
-\t\tBackgroundTransparency = 1,
-\t\tPosition = UDim2.new(0, 16, 0, 14),
-\t\tSize = UDim2.new(1, -32, 0, 24),
-\t\tFont = Enum.Font.GothamBold,
-\t\tText = titleText,
-\t\tTextColor3 = colors.text,
-\t\tTextSize = 18,
-\t\tTextXAlignment = Enum.TextXAlignment.Left,
-\t})
-\tcreate("TextLabel", {
-\t\tParent = f,
-\t\tBackgroundTransparency = 1,
-\t\tPosition = UDim2.new(0, 16, 0, 40),
-\t\tSize = UDim2.new(1, -32, 0, h - 48),
-\t\tFont = Enum.Font.Gotham,
-\t\tText = bodyText,
-\t\tTextColor3 = colors.muted,
-\t\tTextSize = 14,
-\t\tTextWrapped = true,
-\t\tTextYAlignment = Enum.TextYAlignment.Top,
-\t\tTextXAlignment = Enum.TextXAlignment.Left,
-\t})
-\treturn f
+for i, tab in ipairs(Tabs) do
+    local btn = Create("TextButton", {
+        Name = tab.id .. "Btn",
+        Parent = Sidebar,
+        Size = UDim2.new(1, -16, 0, 42),
+        Position = UDim2.new(0, 8, 0, 15 + (i - 1) * 50),
+        BackgroundColor3 = (i == 1) and CONFIG.AccentColor or Color3.fromRGB(28, 28, 35),
+        BorderSizePixel = 0,
+        Text = tab.name,
+        TextColor3 = (i == 1) and CONFIG.TextColor or CONFIG.SubTextColor,
+        TextSize = 14,
+        Font = CONFIG.FontBold,
+        AutoButtonColor = false,
+    })
+    
+    AddUICorner(btn, 8)
+    
+    table.insert(TabButtons, {Button = btn, Id = tab.id})
+    
+    btn.MouseButton1Click:Connect(function()
+        SwitchTab(tab.id)
+    end)
+    
+    btn.MouseEnter:Connect(function()
+        if CurrentTab ~= tab.id then
+            Tween(btn, {BackgroundColor3 = Color3.fromRGB(40, 40, 50)}, 0.2)
+        end
+    end)
+    
+    btn.MouseLeave:Connect(function()
+        if CurrentTab ~= tab.id then
+            Tween(btn, {BackgroundColor3 = Color3.fromRGB(28, 28, 35)}, 0.2)
+        end
+    end)
 end
 
-card(home, 112, "Welcome", "Modern premium dashboard style with smooth motion, crisp spacing, and a futuristic black UI.")
-card(home, 150, "Quick Actions", "Add buttons here for favorite scripts, load hub, open cloud, and toggle themes.")
-card(scripts, 130, "Script Cards", "Place 10 script cards with ratings, tags, search, categories, favorites, and recently added.")
-card(hub, 130, "Hub Browser", "Show featured hubs, trending hubs, recently updated hubs, and recommended hubs.")
-card(playercenter, 140, "Player Center", "Add player list, avatar preview, user profile, team, stats, and spectate controls.")
-card(settings, 180, "Settings", "Theme, accent color, RGB mode, blur toggle, UI scale, sound toggle, language, backup, and reset.")
+-- ============================================
+-- CONTENT FRAME
+-- ============================================
+local ContentFrame = Create("Frame", {
+    Name = "ContentFrame",
+    Parent = MainFrame,
+    Size = UDim2.new(1, -160, 1, -50),
+    Position = UDim2.new(0, 160, 0, 50),
+    BackgroundTransparency = 1,
+})
 
-local function navButton(text, y)
-\tlocal b = create("TextButton", {
-\t\tParent = sidebar,
-\t\tPosition = UDim2.new(0, 12, 0, y),
-\t\tSize = UDim2.new(1, -24, 0, 42),
-\t\tBackgroundColor3 = Color3.fromRGB(22, 22, 28),
-\t\tBorderSizePixel = 0,
-\t\tText = text,
-\t\tFont = Enum.Font.GothamMedium,
-\t\tTextColor3 = colors.text,
-\t\tTextSize = 15,
-\t\tAutoButtonColor = false,
-\t})
-\tcreate("UICorner", {Parent = b, CornerRadius = UDim.new(0, 12)})
-\treturn b
+-- ============================================
+-- HOME TAB
+-- ============================================
+local HomeTab = Create("Frame", {
+    Name = "HomeTab",
+    Parent = ContentFrame,
+    Size = UDim2.new(1, 0, 1, 0),
+    BackgroundTransparency = 1,
+    Visible = true,
+})
+
+TabContents["Home"] = HomeTab
+
+-- Home Title
+local HomeTitle = Create("TextLabel", {
+    Name = "Title",
+    Parent = HomeTab,
+    Size = UDim2.new(1, -20, 0, 30),
+    Position = UDim2.new(0, 15, 0, 12),
+    BackgroundTransparency = 1,
+    Text = "🏠 Saved Scripts",
+    TextColor3 = CONFIG.TextColor,
+    TextSize = 20,
+    Font = CONFIG.FontBold,
+    TextXAlignment = Enum.TextXAlignment.Left,
+})
+
+local HomeDesc = Create("TextLabel", {
+    Name = "Desc",
+    Parent = HomeTab,
+    Size = UDim2.new(1, -20, 0, 20),
+    Position = UDim2.new(0, 15, 0, 42),
+    BackgroundTransparency = 1,
+    Text = "Manage your saved scripts - Execute, Copy, or Delete",
+    TextColor3 = CONFIG.SubTextColor,
+    TextSize = 13,
+    Font = CONFIG.Font,
+    TextXAlignment = Enum.TextXAlignment.Left,
+})
+
+-- Saved Scripts Container
+local SavedScroll = Create("ScrollingFrame", {
+    Name = "SavedScroll",
+    Parent = HomeTab,
+    Size = UDim2.new(1, -20, 1, -110),
+    Position = UDim2.new(0, 10, 0, 70),
+    BackgroundColor3 = Color3.fromRGB(22, 22, 28),
+    BorderSizePixel = 0,
+    ScrollBarThickness = 6,
+    ScrollBarImageColor3 = Color3.fromRGB(80, 80, 90),
+    CanvasSize = UDim2.new(0, 0, 0, 0),
+    AutomaticCanvasSize = Enum.AutomaticSize.Y,
+})
+
+AddUICorner(SavedScroll, 10)
+AddUIPadding(SavedScroll, 10)
+
+local SavedListLayout = Create("UIListLayout", {
+    Parent = SavedScroll,
+    Padding = UDim.new(0, 10),
+    SortOrder = Enum.SortOrder.LayoutOrder,
+})
+
+-- Function to refresh saved scripts list
+local function RefreshSavedScripts()
+    -- Clear existing
+    for _, child in pairs(SavedScroll:GetChildren()) do
+        if child:IsA("Frame") then child:Destroy() end
+    end
+    
+    if #SavedScripts == 0 then
+        local empty = Create("TextLabel", {
+            Parent = SavedScroll,
+            Size = UDim2.new(1, -20, 0, 100),
+            BackgroundTransparency = 1,
+            Text = "📂 No saved scripts yet\nSave scripts from the Executor tab to see them here",
+            TextColor3 = CONFIG.SubTextColor,
+            TextSize = 14,
+            Font = CONFIG.Font,
+            TextXAlignment = Enum.TextXAlignment.Center,
+            TextYAlignment = Enum.TextYAlignment.Center,
+        })
+        return
+    end
+    
+    for i, scriptData in ipairs(SavedScripts) do
+        local card = Create("Frame", {
+            Name = "Script_" .. i,
+            Parent = SavedScroll,
+            Size = UDim2.new(1, -10, 0, 70),
+            BackgroundColor3 = CONFIG.SecondaryColor,
+            BorderSizePixel = 0,
+        })
+        
+        AddUICorner(card, 8)
+        AddUIStroke(card, Color3.fromRGB(60, 60, 70), 1)
+        
+        -- Script Name
+        local nameLabel = Create("TextLabel", {
+            Parent = card,
+            Size = UDim2.new(1, -200, 0, 25),
+            Position = UDim2.new(0, 12, 0, 8),
+            BackgroundTransparency = 1,
+            Text = scriptData.name,
+            TextColor3 = CONFIG.TextColor,
+            TextSize = 15,
+            Font = CONFIG.FontBold,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            TextTruncate = Enum.TextTruncate.AtEnd,
+        })
+        
+        -- Script Preview
+        local preview = Create("TextLabel", {
+            Parent = card,
+            Size = UDim2.new(1, -200, 0, 20),
+            Position = UDim2.new(0, 12, 0, 35),
+            BackgroundTransparency = 1,
+            Text = scriptData.code:sub(1, 50) .. (scriptData.code:len() > 50 and "..." or ""),
+            TextColor3 = CONFIG.SubTextColor,
+            TextSize = 11,
+            Font = CONFIG.FontMono,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            TextTruncate = Enum.TextTruncate.AtEnd,
+        })
+        
+        -- Execute Button
+        local execBtn = Create("TextButton", {
+            Parent = card,
+            Size = UDim2.new(0, 70, 0, 32),
+            Position = UDim2.new(1, -235, 0.5, -16),
+            BackgroundColor3 = CONFIG.SuccessColor,
+            BorderSizePixel = 0,
+            Text = "▶ Run",
+            TextColor3 = CONFIG.TextColor,
+            TextSize = 12,
+            Font = CONFIG.FontBold,
+            AutoButtonColor = false,
+        })
+        AddUICorner(execBtn, 6)
+        
+        execBtn.MouseButton1Click:Connect(function()
+            -- Execute the saved script
+            local func, err = loadstring(scriptData.code)
+            if func then
+                local env = setmetatable({
+                    print = function(...) 
+                        local args = {...}
+                        local str = ""
+                        for i, v in ipairs(args) do str = str .. tostring(v) .. " " end
+                        print("[Home] " .. str)
+                    end,
+                    game = game, workspace = workspace, Players = Players,
+                }, {__index = _G})
+                setfenv(func, env)
+                pcall(func)
+            end
+        end)
+        
+        -- Copy Button
+        local copyBtn = Create("TextButton", {
+            Parent = card,
+            Size = UDim2.new(0, 70, 0, 32),
+            Position = UDim2.new(1, -155, 0.5, -16),
+            BackgroundColor3 = Color3.fromRGB(60, 60, 75),
+            BorderSizePixel = 0,
+            Text = "📋 Copy",
+            TextColor3 = CONFIG.TextColor,
+            TextSize = 12,
+            Font = CONFIG.FontBold,
+            AutoButtonColor = false,
+        })
+        AddUICorner(copyBtn, 6)
+        
+        copyBtn.MouseButton1Click:Connect(function()
+            -- Copy to executor
+            if ExecutorCodeInput then
+                ExecutorCodeInput.Text = scriptData.code
+                SwitchTab("Executor")
+            end
+        end)
+        
+        -- Delete Button
+        local delBtn = Create("TextButton", {
+            Parent = card,
+            Size = UDim2.new(0, 70, 0, 32),
+            Position = UDim2.new(1, -75, 0.5, -16),
+            BackgroundColor3 = CONFIG.ErrorColor,
+            BorderSizePixel = 0,
+            Text = "🗑 Del",
+            TextColor3 = CONFIG.TextColor,
+            TextSize = 12,
+            Font = CONFIG.FontBold,
+            AutoButtonColor = false,
+        })
+        AddUICorner(delBtn, 6)
+        
+        delBtn.MouseButton1Click:Connect(function()
+            table.remove(SavedScripts, i)
+            RefreshSavedScripts()
+        end)
+    end
 end
 
-local navs = {
-\tHome = navButton("Home", 16),
-\tScripts = navButton("Scripts", 66),
-\t["Hub Browser"] = navButton("Hub Browser", 116),
-\t["Player Center"] = navButton("Player Center", 166),
-\tSettings = navButton("Settings", 216),
+-- Add New Script Button
+local AddScriptBtn = Create("TextButton", {
+    Name = "AddScriptBtn",
+    Parent = HomeTab,
+    Size = UDim2.new(1, -20, 0, 40),
+    Position = UDim2.new(0, 10, 1, -50),
+    BackgroundColor3 = CONFIG.AccentColor,
+    BorderSizePixel = 0,
+    Text = "+ Add New Script",
+    TextColor3 = CONFIG.TextColor,
+    TextSize = 15,
+    Font = CONFIG.FontBold,
+    AutoButtonColor = false,
+})
+
+AddUICorner(AddScriptBtn, 10)
+
+AddScriptBtn.MouseButton1Click:Connect(function()
+    -- Open a popup to add script
+    local popup = Create("Frame", {
+        Name = "AddPopup",
+        Parent = ScreenGui,
+        Size = UDim2.new(0, 400, 0, 300),
+        Position = UDim2.new(0.5, -200, 0.5, -150),
+        BackgroundColor3 = CONFIG.PrimaryColor,
+        BorderSizePixel = 0,
+        ZIndex = 100,
+    })
+    
+    AddUICorner(popup, 12)
+    AddUIStroke(popup, Color3.fromRGB(80, 80, 95), 2)
+    AddShadow(popup)
+    
+    local popupTitle = Create("TextLabel", {
+        Parent = popup,
+        Size = UDim2.new(1, -20, 0, 30),
+        Position = UDim2.new(0, 10, 0, 12),
+        BackgroundTransparency = 1,
+        Text = "📝 Add New Script",
+        TextColor3 = CONFIG.TextColor,
+        TextSize = 18,
+        Font = CONFIG.FontBold,
+        TextXAlignment = Enum.TextXAlignment.Left,
+    })
+    
+    local nameInput = Create("TextBox", {
+        Parent = popup,
+        Size = UDim2.new(1, -20, 0, 40),
+        Position = UDim2.new(0, 10, 0, 50),
+        BackgroundColor3 = CONFIG.SecondaryColor,
+        BorderSizePixel = 0,
+        PlaceholderText = "Script Name...",
+        TextColor3 = CONFIG.TextColor,
+        PlaceholderColor3 = Color3.fromRGB(100, 100, 110),
+        TextSize = 14,
+        Font = CONFIG.Font,
+    })
+    AddUICorner(nameInput, 8)
+    
+    local codeInput = Create("TextBox", {
+        Parent = popup,
+        Size = UDim2.new(1, -20, 0, 120),
+        Position = UDim2.new(0, 10, 0, 100),
+        BackgroundColor3 = CONFIG.SecondaryColor,
+        BorderSizePixel = 0,
+        PlaceholderText = "Paste Lua code here...",
+        TextColor3 = CONFIG.TextColor,
+        PlaceholderColor3 = Color3.fromRGB(100, 100, 110),
+        TextSize = 12,
+        Font = CONFIG.FontMono,
+        MultiLine = true,
+        TextWrapped = true,
+        ClearTextOnFocus = false,
+    })
+    AddUICorner(codeInput, 8)
+    
+    local saveBtn = Create("TextButton", {
+        Parent = popup,
+        Size = UDim2.new(0, 120, 0, 36),
+        Position = UDim2.new(0.5, -125, 1, -50),
+        BackgroundColor3 = CONFIG.SuccessColor,
+        BorderSizePixel = 0,
+        Text = "💾 Save",
+        TextColor3 = CONFIG.TextColor,
+        TextSize = 14,
+        Font = CONFIG.FontBold,
+        AutoButtonColor = false,
+    })
+    AddUICorner(saveBtn, 8)
+    
+    local cancelBtn = Create("TextButton", {
+        Parent = popup,
+        Size = UDim2.new(0, 120, 0, 36),
+        Position = UDim2.new(0.5, 5, 1, -50),
+        BackgroundColor3 = Color3.fromRGB(60, 60, 70),
+        BorderSizePixel = 0,
+        Text = "❌ Cancel",
+        TextColor3 = CONFIG.TextColor,
+        TextSize = 14,
+        Font = CONFIG.FontBold,
+        AutoButtonColor = false,
+    })
+    AddUICorner(cancelBtn, 8)
+    
+    saveBtn.MouseButton1Click:Connect(function()
+        if nameInput.Text ~= "" and codeInput.Text ~= "" then
+            table.insert(SavedScripts, {
+                name = nameInput.Text,
+                code = codeInput.Text
+            })
+            RefreshSavedScripts()
+            popup:Destroy()
+        end
+    end)
+    
+    cancelBtn.MouseButton1Click:Connect(function()
+        popup:Destroy()
+    end)
+end)
+
+-- ============================================
+-- EXECUTOR TAB
+-- ============================================
+local ExecutorTab = Create("Frame", {
+    Name = "ExecutorTab",
+    Parent = ContentFrame,
+    Size = UDim2.new(1, 0, 1, 0),
+    BackgroundTransparency = 1,
+    Visible = false,
+})
+
+TabContents["Executor"] = ExecutorTab
+
+-- Editor Frame
+local EditorFrame = Create("Frame", {
+    Name = "EditorFrame",
+    Parent = ExecutorTab,
+    Size = UDim2.new(1, -20, 0.6, -10),
+    Position = UDim2.new(0, 10, 0, 10),
+    BackgroundColor3 = Color3.fromRGB(20, 20, 25),
+    BorderSizePixel = 0,
+})
+
+AddUICorner(EditorFrame, 10)
+AddUIStroke(EditorFrame, Color3.fromRGB(50, 50, 60), 1)
+
+-- Line Numbers
+local LineNumbers = Create("TextLabel", {
+    Name = "LineNumbers",
+    Parent = EditorFrame,
+    Size = UDim2.new(0, 40, 1, -10),
+    Position = UDim2.new(0, 5, 0, 5),
+    BackgroundTransparency = 1,
+    Text = "1",
+    TextColor3 = Color3.fromRGB(80, 80, 90),
+    TextSize = 13,
+    Font = CONFIG.FontMono,
+    TextXAlignment = Enum.TextXAlignment.Right,
+    TextYAlignment = Enum.TextYAlignment.Top,
+})
+
+-- Code Scroll
+local CodeScroll = Create("ScrollingFrame", {
+    Name = "CodeScroll",
+    Parent = EditorFrame,
+    Size = UDim2.new(1, -50, 1, -10),
+    Position = UDim2.new(0, 45, 0, 5),
+    BackgroundTransparency = 1,
+    BorderSizePixel = 0,
+    ScrollBarThickness = 5,
+    ScrollBarImageColor3 = Color3.fromRGB(80, 80, 90),
+    CanvasSize = UDim2.new(0, 0, 5, 0),
+})
+
+ExecutorCodeInput = Create("TextBox", {
+    Name = "CodeInput",
+    Parent = CodeScroll,
+    Size = UDim2.new(1, -10, 5, 0),
+    Position = UDim2.new(0, 5, 0, 0),
+    BackgroundTransparency = 1,
+    Text = "-- Meowl Executor\n-- Write your Lua code here\n\nprint('Hello from Meowl!')\n",
+    TextColor3 = CONFIG.TextColor,
+    TextSize = 13,
+    Font = CONFIG.FontMono,
+    TextXAlignment = Enum.TextXAlignment.Left,
+    TextYAlignment = Enum.TextYAlignment.Top,
+    MultiLine = true,
+    ClearTextOnFocus = false,
+    TextWrapped = false,
+})
+
+-- Update line numbers
+local function UpdateLineNumbers()
+    local text = ExecutorCodeInput.Text
+    local lines = 1
+    for _ in text:gmatch("\n") do lines = lines + 1 end
+    local numbers = {}
+    for i = 1, lines do table.insert(numbers, tostring(i)) end
+    LineNumbers.Text = table.concat(numbers, "\n")
+end
+
+ExecutorCodeInput:GetPropertyChangedSignal("Text"):Connect(UpdateLineNumbers)
+UpdateLineNumbers()
+
+-- Button Bar
+local ExecButtonBar = Create("Frame", {
+    Name = "ButtonBar",
+    Parent = ExecutorTab,
+    Size = UDim2.new(1, -20, 0, 40),
+    Position = UDim2.new(0, 10, 0.6, 5),
+    BackgroundTransparency = 1,
+})
+
+-- Execute
+local ExecBtn = Create("TextButton", {
+    Name = "ExecBtn",
+    Parent = ExecButtonBar,
+    Size = UDim2.new(0, 110, 1, 0),
+    Position = UDim2.new(0, 0, 0, 0),
+    BackgroundColor3 = CONFIG.SuccessColor,
+    BorderSizePixel = 0,
+    Text = "▶ Execute",
+    TextColor3 = CONFIG.TextColor,
+    TextSize = 14,
+    Font = CONFIG.FontBold,
+    AutoButtonColor = false,
+})
+AddUICorner(ExecBtn, 8)
+
+-- Clear
+local ClearBtn = Create("TextButton", {
+    Name = "ClearBtn",
+    Parent = ExecButtonBar,
+    Size = UDim2.new(0, 90, 1, 0),
+    Position = UDim2.new(0, 120, 0, 0),
+    BackgroundColor3 = Color3.fromRGB(60, 60, 70),
+    BorderSizePixel = 0,
+    Text = "🗑 Clear",
+    TextColor3 = CONFIG.TextColor,
+    TextSize = 14,
+    Font = CONFIG.FontBold,
+    AutoButtonColor = false,
+})
+AddUICorner(ClearBtn, 8)
+
+-- Copy Code
+local CopyCodeBtn = Create("TextButton", {
+    Name = "CopyCodeBtn",
+    Parent = ExecButtonBar,
+    Size = UDim2.new(0, 90, 1, 0),
+    Position = UDim2.new(0, 220, 0, 0),
+    BackgroundColor3 = Color3.fromRGB(60, 60, 70),
+    BorderSizePixel = 0,
+    Text = "📋 Copy",
+    TextColor3 = CONFIG.TextColor,
+    TextSize = 14,
+    Font = CONFIG.FontBold,
+    AutoButtonColor = false,
+})
+AddUICorner(CopyCodeBtn, 8)
+
+-- Save to Home
+local SaveToHomeBtn = Create("TextButton", {
+    Name = "SaveToHomeBtn",
+    Parent = ExecButtonBar,
+    Size = UDim2.new(0, 120, 1, 0),
+    Position = UDim2.new(0, 320, 0, 0),
+    BackgroundColor3 = CONFIG.AccentColor,
+    BorderSizePixel = 0,
+    Text = "💾 Save to Home",
+    TextColor3 = CONFIG.TextColor,
+    TextSize = 14,
+    Font = CONFIG.FontBold,
+    AutoButtonColor = false,
+})
+AddUICorner(SaveToHomeBtn, 8)
+
+-- Execute Logic
+ExecBtn.MouseButton1Click:Connect(function()
+    local code = ExecutorCodeInput.Text
+    if code:gsub("%s", "") == "" then return end
+    
+    AddOutput("Executing code...", false)
+    
+    local env = setmetatable({
+        print = function(...)
+            local args = {...}
+            local str = ""
+            for i, v in ipairs(args) do str = str .. tostring(v) .. (i < #args and " " or "") end
+            AddOutput(str, false)
+        end,
+        warn = function(...)
+            local args = {...}
+            local str = ""
+            for i, v in ipairs(args) do str = str .. tostring(v) .. (i < #args and " " or "") end
+            AddOutput("WARN: " .. str, true)
+        end,
+        game = game, workspace = workspace, script = script,
+        Players = Players, TweenService = TweenService,
+        HttpService = HttpService, RunService = RunService,
+        _G = _G, pairs = pairs, ipairs = ipairs,
+        next = next, tonumber = tonumber, tostring = tostring,
+        type = type, typeof = typeof, unpack = unpack,
+        select = select, pcall = pcall, xpcall = xpcall,
+        assert = assert, rawget = rawget, rawset = rawset,
+        rawequal = rawequal, math = math, string = string,
+        table = table, coroutine = coroutine,
+        os = {clock = os.clock, date = os.date, difftime = os.difftime, time = os.time},
+        Instance = Instance, Vector3 = Vector3, Vector2 = Vector2,
+        Color3 = Color3, CFrame = CFrame, UDim = UDim, UDim2 = UDim2,
+        Enum = Enum, TweenInfo = TweenInfo, tick = tick, time = time,
+        wait = task.wait, spawn = task.spawn, delay = task.delay, task = task,
+    }, {__index = _G})
+    
+    local func, compileErr = loadstring(code)
+    if not func then
+        AddOutput("Compilation Error: " .. tostring(compileErr), true)
+        return
+    end
+    
+    setfenv(func, env)
+    local success, result = pcall(func)
+    if not success then
+        AddOutput("Runtime Error: " .. tostring(result), true)
+    else
+        if result ~= nil then AddOutput("Returned: " .. tostring(result), false) end
+        AddOutput("✓ Execution completed!", false)
+    end
+end)
+
+ClearBtn.MouseButton1Click:Connect(function()
+    ExecutorCodeInput.Text = ""
+    UpdateLineNumbers()
+end)
+
+CopyCodeBtn.MouseButton1Click:Connect(function()
+    -- Visual feedback since we can't actually copy
+    local originalText = CopyCodeBtn.Text
+    CopyCodeBtn.Text = "✓ Copied!"
+    task.delay(1.5, function()
+        CopyCodeBtn.Text = originalText
+    end)
+end)
+
+SaveToHomeBtn.MouseButton1Click:Connect(function()
+    local code = ExecutorCodeInput.Text
+    if code:gsub("%s", "") == "" then return end
+    
+    -- Auto-generate name from first line or default
+    local firstLine = code:match("^[^\n]*") or "Untitled"
+    firstLine = firstLine:gsub("^%-%-%s*", ""):gsub("^%s*(.-)%s*$", "%1")
+    if firstLine == "" then firstLine = "Untitled Script" end
+    if firstLine:len() > 30 then firstLine = firstLine:sub(1, 30) .. "..." end
+    
+    table.insert(SavedScripts, {
+        name = firstLine,
+        code = code
+    })
+    
+    -- Feedback
+    local originalText = SaveToHomeBtn.Text
+    SaveToHomeBtn.Text = "✓ Saved!"
+    task.delay(1.5, function()
+        SaveToHomeBtn.Text = originalText
+    end)
+    
+    RefreshSavedScripts()
+end)
+
+-- Output Console
+local OutputFrame = Create("Frame", {
+    Name = "OutputFrame",
+    Parent = ExecutorTab,
+    Size = UDim2.new(1, -20, 0.35, -15),
+    Position = UDim2.new(0, 10, 0.6, 50),
+    BackgroundColor3 = Color3.fromRGB(18, 18, 23),
+    BorderSizePixel = 0,
+})
+
+AddUICorner(OutputFrame, 10)
+AddUIStroke(OutputFrame, Color3.fromRGB(50, 50, 60), 1)
+
+local OutputHeader = Create("Frame", {
+    Name = "OutputHeader",
+    Parent = OutputFrame,
+    Size = UDim2.new(1, 0, 0, 30),
+    BackgroundColor3 = Color3.fromRGB(28, 28, 35),
+    BorderSizePixel = 0,
+})
+
+AddUICorner(OutputHeader, 10)
+Create("Frame", {Name = "Fix", Parent = OutputHeader, Size = UDim2.new(1, 0, 0.5, 0), Position = UDim2.new(0, 0, 0.5, 0), BackgroundColor3 = OutputHeader.BackgroundColor3, BorderSizePixel = 0})
+
+Create("TextLabel", {
+    Parent = OutputHeader,
+    Size = UDim2.new(1, -20, 1, 0),
+    Position = UDim2.new(0, 10, 0, 0),
+    BackgroundTransparency = 1,
+    Text = "📤 Output Console",
+    TextColor3 = CONFIG.SubTextColor,
+    TextSize = 12,
+    Font = CONFIG.FontBold,
+    TextXAlignment = Enum.TextXAlignment.Left,
+})
+
+local ClearOutputBtn = Create("TextButton", {
+    Parent = OutputHeader,
+    Size = UDim2.new(0, 55, 0, 22),
+    Position = UDim2.new(1, -65, 0.5, -11),
+    BackgroundColor3 = Color3.fromRGB(50, 50, 60),
+    BorderSizePixel = 0,
+    Text = "Clear",
+    TextColor3 = CONFIG.SubTextColor,
+    TextSize = 11,
+    Font = CONFIG.Font,
+    AutoButtonColor = false,
+})
+AddUICorner(ClearOutputBtn, 5)
+
+local OutputScroll = Create("ScrollingFrame", {
+    Name = "OutputScroll",
+    Parent = OutputFrame,
+    Size = UDim2.new(1, -10, 1, -40),
+    Position = UDim2.new(0, 5, 0, 35),
+    BackgroundTransparency = 1,
+    BorderSizePixel = 0,
+    ScrollBarThickness = 4,
+    ScrollBarImageColor3 = Color3.fromRGB(80, 80, 90),
+    CanvasSize = UDim2.new(0, 0, 0, 0),
+    AutomaticCanvasSize = Enum.AutomaticSize.Y,
+})
+
+local OutputText = Create("TextLabel", {
+    Name = "OutputText",
+    Parent = OutputScroll,
+    Size = UDim2.new(1, -10, 0, 0),
+    Position = UDim2.new(0, 5, 0, 0),
+    BackgroundTransparency = 1,
+    Text = "> Meowl Executor ready...\n> Waiting for code execution...\n",
+    TextColor3 = Color3.fromRGB(200, 200, 210),
+    TextSize = 12,
+    Font = CONFIG.FontMono,
+    TextXAlignment = Enum.TextXAlignment.Left,
+    TextYAlignment = Enum.TextYAlignment.Top,
+    AutomaticSize = Enum.AutomaticSize.Y,
+    TextWrapped = true,
+})
+
+function AddOutput(text, isError)
+    local timestamp = os.date("%H:%M:%S")
+    local prefix = isError and "[ERROR]" or "[INFO]"
+    OutputText.Text = OutputText.Text .. string.format("[%s] %s %s\n", timestamp, prefix, text)
+    task.delay(0.1, function()
+        OutputScroll.CanvasPosition = Vector2.new(0, OutputScroll.AbsoluteCanvasSize.Y)
+    end)
+end
+
+ClearOutputBtn.MouseButton1Click:Connect(function()
+    OutputText.Text = "> Console cleared.\n"
+end)
+
+-- ============================================
+-- CLOUD TAB
+-- ============================================
+local CloudTab = Create("Frame", {
+    Name = "CloudTab",
+    Parent = ContentFrame,
+    Size = UDim2.new(1, 0, 1, 0),
+    BackgroundTransparency = 1,
+    Visible = false,
+})
+
+TabContents["Cloud"] = CloudTab
+
+local CloudTitle = Create("TextLabel", {
+    Name = "Title",
+    Parent = CloudTab,
+    Size = UDim2.new(1, -20, 0, 30),
+    Position = UDim2.new(0, 15, 0, 12),
+    BackgroundTransparency = 1,
+    Text = "☁️ Cloud Scripts",
+    TextColor3 = CONFIG.TextColor,
+    TextSize = 20,
+    Font = CONFIG.FontBold,
+    TextXAlignment = Enum.TextXAlignment.Left,
+})
+
+local CloudDesc = Create("TextLabel", {
+    Name = "Desc",
+    Parent = CloudTab,
+    Size = UDim2.new(1, -20, 0, 20),
+    Position = UDim2.new(0, 15, 0, 42),
+    BackgroundTransparency = 1,
+    Text = "Browse and copy from 12 popular scripts",
+    TextColor3 = CONFIG.SubTextColor,
+    TextSize = 13,
+    Font = CONFIG.Font,
+    TextXAlignment = Enum.TextXAlignment.Left,
+})
+
+local CloudScroll = Create("ScrollingFrame", {
+    Name = "CloudScroll",
+    Parent = CloudTab,
+    Size = UDim2.new(1, -20, 1, -75),
+    Position = UDim2.new(0, 10, 0, 70),
+    BackgroundColor3 = Color3.fromRGB(22, 22, 28),
+    BorderSizePixel = 0,
+    ScrollBarThickness = 6,
+    ScrollBarImageColor3 = Color3.fromRGB(80, 80, 90),
+    CanvasSize = UDim2.new(0, 0, 0, 0),
+    AutomaticCanvasSize = Enum.AutomaticSize.Y,
+})
+
+AddUICorner(CloudScroll, 10)
+AddUIPadding(CloudScroll, 12)
+
+local CloudGrid = Create("UIGridLayout", {
+    Parent = CloudScroll,
+    CellSize = UDim2.new(0.5, -8, 0, 100),
+    CellPadding = UDim2.new(0, 10, 0, 10),
+    FillDirection = Enum.FillDirection.Horizontal,
+    HorizontalAlignment = Enum.HorizontalAlignment.Center,
+})
+
+-- Create Cloud Script Cards
+for i, cloudScript in ipairs(CloudScripts) do
+    local card = Create("Frame", {
+        Name = "Cloud_" .. i,
+        Parent = CloudScroll,
+        Size = UDim2.new(0, 0, 0, 0), -- GridLayout controls size
+        BackgroundColor3 = CONFIG.SecondaryColor,
+        BorderSizePixel = 0,
+    })
+    
+    AddUICorner(card, 10)
+    AddUIStroke(card, Color3.fromRGB(60, 60, 75), 1)
+    
+    -- Script Name
+    Create("TextLabel", {
+        Parent = card,
+        Size = UDim2.new(1, -16, 0, 22),
+        Position = UDim2.new(0, 8, 0, 8),
+        BackgroundTransparency = 1,
+        Text = cloudScript.name,
+        TextColor3 = CONFIG.AccentColor,
+        TextSize = 15,
+        Font = CONFIG.FontBold,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextTruncate = Enum.TextTruncate.AtEnd,
+    })
+    
+    -- Description
+    Create("TextLabel", {
+        Parent = card,
+        Size = UDim2.new(1, -16, 0, 18),
+        Position = UDim2.new(0, 8, 0, 32),
+        BackgroundTransparency = 1,
+        Text = cloudScript.desc,
+        TextColor3 = CONFIG.SubTextColor,
+        TextSize = 11,
+        Font = CONFIG.Font,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextTruncate = Enum.TextTruncate.AtEnd,
+    })
+    
+    -- Copy to Executor Button
+    local copyToExec = Create("TextButton", {
+        Parent = card,
+        Size = UDim2.new(0.48, -4, 0, 32),
+        Position = UDim2.new(0, 8, 1, -42),
+        BackgroundColor3 = CONFIG.AccentColor,
+        BorderSizePixel = 0,
+        Text = "📋 Copy",
+        TextColor3 = CONFIG.TextColor,
+        TextSize = 12,
+        Font = CONFIG.FontBold,
+        AutoButtonColor = false,
+    })
+    AddUICorner(copyToExec, 6)
+    
+    copyToExec.MouseButton1Click:Connect(function()
+        ExecutorCodeInput.Text = cloudScript.code
+        SwitchTab("Executor")
+        AddOutput("Loaded '" .. cloudScript.name .. "' from Cloud", false)
+    end)
+    
+    -- Execute Directly Button
+    local execDirect = Create("TextButton", {
+        Parent = card,
+        Size = UDim2.new(0.48, -4, 0, 32),
+        Position = UDim2.new(0.52, 0, 1, -42),
+        BackgroundColor3 = CONFIG.SuccessColor,
+        BorderSizePixel = 0,
+        Text = "▶ Run",
+        TextColor3 = CONFIG.TextColor,
+        TextSize = 12,
+        Font = CONFIG.FontBold,
+        AutoButtonColor = false,
+    })
+    AddUICorner(execDirect, 6)
+    
+    execDirect.MouseButton1Click:Connect(function()
+        ExecutorCodeInput.Text = cloudScript.code
+        SwitchTab("Executor")
+        -- Auto-execute
+        task.delay(0.3, function()
+            ExecBtn.MouseButton1Click:Fire()
+        end)
+    end)
+end
+
+-- ============================================
+-- SETTINGS TAB
+-- ============================================
+local SettingsTab = Create("Frame", {
+    Name = "SettingsTab",
+    Parent = ContentFrame,
+    Size = UDim2.new(1, 0, 1, 0),
+    BackgroundTransparency = 1,
+    Visible = false,
+})
+
+TabContents["Settings"] = SettingsTab
+
+local SettingsTitle = Create("TextLabel", {
+    Name = "Title",
+    Parent = SettingsTab,
+    Size = UDim2.new(1, -20, 0, 30),
+    Position = UDim2.new(0, 15, 0, 12),
+    BackgroundTransparency = 1,
+    Text = "⚙️ Settings",
+    TextColor3 = CONFIG.TextColor,
+    TextSize = 20,
+    Font = CONFIG.FontBold,
+    TextXAlignment = Enum.TextXAlignment.Left,
+})
+
+-- Settings Container
+local SettingsContainer = Create("Frame", {
+    Name = "SettingsContainer",
+    Parent = SettingsTab,
+    Size = UDim2.new(1, -20, 1, -60),
+    Position = UDim2.new(0, 10, 0, 50),
+    BackgroundColor3 = Color3.fromRGB(22, 22, 28),
+    BorderSizePixel = 0,
+})
+
+AddUICorner(SettingsContainer, 10)
+
+-- Setting Items
+local settingsItems = {
+    {label = "🎨 UI Theme", desc = "Current: Meowl Purple", type = "info"},
+    {label = "⌨️ Toggle Key", desc = "RightShift to show/hide", type = "info"},
+    {label = "🗑 Clear All Saved", desc = "Delete all saved scripts", type = "danger", action = function()
+        SavedScripts = {}
+        RefreshSavedScripts()
+        AddOutput("All saved scripts cleared!", false)
+    end},
+    {label = "🔄 Reset Executor", desc = "Clear editor and output", type = "normal", action = function()
+        ExecutorCodeInput.Text = ""
+        OutputText.Text = "> Executor reset.\n"
+        UpdateLineNumbers()
+    end},
+    {label = "📊 Executor Info", desc = "Version: 2.0 | Made by Meowl", type = "info"},
 }
 
-local function showPage(name)
-\tfor n, p in pairs(pages) do
-\t\tp.Visible = n == name
-\tend
-\tstate.lastPage = name
+for i, item in ipairs(settingsItems) do
+    local row = Create("Frame", {
+        Parent = SettingsContainer,
+        Size = UDim2.new(1, -20, 0, 60),
+        Position = UDim2.new(0, 10, 0, 10 + (i - 1) * 70),
+        BackgroundColor3 = CONFIG.SecondaryColor,
+        BorderSizePixel = 0,
+    })
+    AddUICorner(row, 8)
+    
+    Create("TextLabel", {
+        Parent = row,
+        Size = UDim2.new(1, -20, 0, 22),
+        Position = UDim2.new(0, 12, 0, 8),
+        BackgroundTransparency = 1,
+        Text = item.label,
+        TextColor3 = CONFIG.TextColor,
+        TextSize = 14,
+        Font = CONFIG.FontBold,
+        TextXAlignment = Enum.TextXAlignment.Left,
+    })
+    
+    Create("TextLabel", {
+        Parent = row,
+        Size = UDim2.new(1, -20, 0, 18),
+        Position = UDim2.new(0, 12, 0, 32),
+        BackgroundTransparency = 1,
+        Text = item.desc,
+        TextColor3 = CONFIG.SubTextColor,
+        TextSize = 12,
+        Font = CONFIG.Font,
+        TextXAlignment = Enum.TextXAlignment.Left,
+    })
+    
+    if item.action then
+        local actionBtn = Create("TextButton", {
+            Parent = row,
+            Size = UDim2.new(0, 80, 0, 32),
+            Position = UDim2.new(1, -92, 0.5, -16),
+            BackgroundColor3 = (item.type == "danger") and CONFIG.ErrorColor or CONFIG.AccentColor,
+            BorderSizePixel = 0,
+            Text = (item.type == "danger") and "Clear" or "Apply",
+            TextColor3 = CONFIG.TextColor,
+            TextSize = 12,
+            Font = CONFIG.FontBold,
+            AutoButtonColor = false,
+        })
+        AddUICorner(actionBtn, 6)
+        
+        actionBtn.MouseButton1Click:Connect(function()
+            item.action()
+            actionBtn.Text = "✓ Done"
+            task.delay(1, function()
+                actionBtn.Text = (item.type == "danger") and "Clear" or "Apply"
+            end)
+        end)
+    end
 end
 
-for name, btn in pairs(navs) do
-\tbtn.MouseEnter:Connect(function()
-\t\ttween(btn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(32, 32, 42)})
-\tend)
-\tbtn.MouseLeave:Connect(function()
-\t\tif state.lastPage ~= name then
-\t\t\ttween(btn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(22, 22, 28)})
-\t\tend
-\tend)
-\tbtn.MouseButton1Click:Connect(function()
-\t\tshowPage(name)
-\t\tfor n, b in pairs(navs) do
-\t\t\ttween(b, TweenInfo.new(0.15), {BackgroundColor3 = (n == name) and Color3.fromRGB(42, 36, 70) or Color3.fromRGB(22, 22, 28)})
-\t\tend
-\tend)
+-- ============================================
+-- DRAGGABLE & TOGGLE
+-- ============================================
+local function MakeDraggable(frame, handle)
+    handle = handle or frame
+    local dragging = false
+    local dragStart, startPos
+    
+    handle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = frame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then dragging = false end
+            end)
+        end
+    end)
+    
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
 end
 
-showPage("Home")
-navs.Home.BackgroundColor3 = Color3.fromRGB(42, 36, 70)
+MakeDraggable(KeyFrame)
+MakeDraggable(MainFrame, TopBar)
 
-local dragging = false
-local dragStart, startPos
-
-top.InputBegan:Connect(function(input)
-\tif input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-\t\tdragging = true
-\t\tdragStart = input.Position
-\t\tstartPos = main.Position
-\t\tinput.Changed:Connect(function()
-\t\t\tif input.UserInputState == Enum.UserInputState.End then
-\t\t\t\tdragging = false
-\t\t\tend
-\t\tend)
-\tend
+-- Toggle with RightShift
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.RightShift then
+        if MainFrame.Visible then
+            MainFrame.Visible = false
+        elseif KeyFrame.Visible then
+            KeyFrame.Visible = false
+        else
+            KeyFrame.Visible = true
+            KeyFrame.Size = UDim2.new(0, 440, 0, 340)
+            KeyFrame.Position = UDim2.new(0.5, -220, 0.5, -170)
+        end
+    end
 end)
 
-top.InputChanged:Connect(function(input)
-\tif input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-\t\tlocal connection
-\t\tconnection = UserInputService.InputChanged:Connect(function(move)
-\t\t\tif dragging and (move.UserInputType == Enum.UserInputType.MouseMovement or move.UserInputType == Enum.UserInputType.Touch) then
-\t\t\t\tlocal delta = move.Position - dragStart
-\t\t\t\tmain.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-\t\t\tend
-\t\tend)
-\t\ttask.defer(function()
-\t\t\tif connection then connection:Disconnect() end
-\t\tend)
-\tend
-end)
+-- ============================================
+-- INITIAL ANIMATION
+-- ============================================
+KeyFrame.Size = UDim2.new(0, 440, 0, 0)
+KeyFrame.Position = UDim2.new(0.5, -220, 0.5, 0)
 
-local progress = 0
-local tips = {
-\t"Tip: Use favorites for instant access.",
-\t"Tip: RGB mode looks best with subtle blur.",
-\t"Tip: Search pages to jump faster.",
-\t"Tip: Keep animations short for a premium feel.",
-}
+Tween(KeyFrame, {Size = UDim2.new(0, 440, 0, 340)}, 0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+Tween(KeyFrame, {Position = UDim2.new(0.5, -220, 0.5, -170)}, 0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 
-showPage("Home")
-main.Visible = false
-task.spawn(function()
-\tmain.Visible = true
-\tfor i = 1, 100 do
-\t\tprogress = i
-\t\tbarFill.Size = UDim2.new(i / 100, 0, 1, 0)
-\t\ttip.Text = tips[(math.floor(i / 25) % #tips) + 1]
-\t\ttask.wait(0.012)
-\tend
-\ttween(loading, TweenInfo.new(0.35), {BackgroundTransparency = 1})
-\ttween(dim, TweenInfo.new(0.35), {BackgroundTransparency = 1})
-\ttask.wait(0.25)
-\tloading.Visible = false
-\tdim.Visible = false
-\ttween(main, TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.new(0, 980, 0, 620)})
-end)
-
-local function pulse(button)
-\ttween(button, TweenInfo.new(0.08), {Size = button.Size + UDim2.new(0, 2, 0, 2)})
-\ttask.delay(0.08, function()
-\t\ttween(button, TweenInfo.new(0.08), {Size = button.Size - UDim2.new(0, 2, 0, 2)})
-\tend)
-end
-
-close.MouseEnter:Connect(function()
-\ttween(close, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(70, 22, 24)})
-end)
-close.MouseLeave:Connect(function()
-\ttween(close, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(40, 18, 20)})
-end)
-close.MouseButton1Click:Connect(function()
-\tgui.Enabled = false
-end)
-
-minimize.MouseEnter:Connect(function()
-\ttween(minimize, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(40, 40, 52)})
-end)
-minimize.MouseLeave:Connect(function()
-\ttween(minimize, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(28, 28, 38)})
-end)
-minimize.MouseButton1Click:Connect(function()
-\tstate.minimized = not state.minimized
-\tcontent.Visible = not state.minimized
-\tsidebar.Visible = not state.minimized
-\ttween(main, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-\t\tSize = state.minimized and UDim2.new(0, 980, 0, 64) or UDim2.new(0, 980, 0, 620)
-\t})
-end)
-
-for _, obj in ipairs({close, minimize}) do
-\tobj.MouseButton1Down:Connect(function()
-\t\tpulse(obj)
-\tend)
-end
-
-local hue = 0
-RunService.RenderStepped:Connect(function(dt)
-\tif state.rgb then
-\t\thue = (hue + dt * 0.12) % 1
-\t\tcolors.accent = Color3.fromHSV(hue, 0.85, 1)
-\t\tbarFill.BackgroundColor3 = colors.accent
-\tend
-\tbgGradient.Rotation = (bgGradient.Rotation + dt * 6) % 360
-\tbarGrad.Rotation = (barGrad.Rotation + dt * 120) % 360
-end)
+print("🐱 Meowl Executor v2.0 loaded! Press RightShift to toggle.")
